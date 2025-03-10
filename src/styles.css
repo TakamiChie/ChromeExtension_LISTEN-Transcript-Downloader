@@ -5,6 +5,9 @@
 div#listendltool_download {
   padding: 8px;
   margin: 0 12px;
+  position: fixed;
+  left: 0;
+  right: 0;
 }
 
 div#listendltool_download > button {
