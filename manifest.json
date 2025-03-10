@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "LISTEN Transcript Downloader",
+  "version": "1.0",
+  "description": "LISTENでポッドキャストの文字起こしを一括ダウンロード",
+  "permissions": ["downloads", "activeTab", "scripting"],
+  "host_permissions": ["https://listen.style/p/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://listen.style/p/*"],
+      "js": ["src/content.js"],
+      "css": ["src/styles.css"]
+    }
+  ]
+}

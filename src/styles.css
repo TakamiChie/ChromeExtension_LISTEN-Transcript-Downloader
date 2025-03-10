@@ -1,0 +1,20 @@
+.transcript-checkbox {
+  transform: scale(1.2);
+}
+
+div#listendltool_download {
+  padding: 8px;
+  margin: 0 12px;
+}
+
+div#listendltool_download > button {
+  border: 1px solid black;
+  padding: 4px;
+  margin: 0 auto;
+  display: block;
+  background-color: white;
+}
+
+div#listendltool_download > button:hover {
+  background-color: silver;
+}
