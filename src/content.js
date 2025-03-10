@@ -9,6 +9,7 @@
         check.type ="checkbox";
         check.id = `check_${e.dataset.episodeId}`;
         check.className = "transcript-checkbox";
+        check.addEventListener("change", updateButtonVisibility);
         e.querySelector("h2").insertBefore(check, e.querySelector("h2 > a"));
       });
       let button = document.createElement("button");
@@ -24,6 +25,13 @@
       String(date.getMonth() + 1).padStart(2, "0") + separator +
       String(date.getDate()).padStart(2, "0");
   }
+
+  function updateButtonVisibility() {
+    const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']:checked");
+    const button = document.getElementById(BUTTON_ID);
+    button.style.display = checkboxes.length > 0 ? "block" : "none";
+  }
+
   async function do_download(p) {
     const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']:checked");
     const today = new Date();

@@ -10,6 +10,7 @@ button#listendltool_download {
   background: #e5e7eb;;
   color: black;
   border: 1px solid black;
+  display: none;
 }
 
 button#listendltool_download:hover {
