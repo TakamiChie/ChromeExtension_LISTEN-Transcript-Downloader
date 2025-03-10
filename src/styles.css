@@ -2,22 +2,16 @@
   transform: scale(1.2);
 }
 
-div#listendltool_download {
-  padding: 8px;
-  margin: 0 12px;
+button#listendltool_download {
   position: fixed;
-  left: 0;
-  right: 0;
-}
-
-div#listendltool_download > button {
+  top: 10px;
+  right: 10px;
+  padding: 10px;
+  background: #e5e7eb;;
+  color: black;
   border: 1px solid black;
-  padding: 4px;
-  margin: 0 auto;
-  display: block;
-  background-color: white;
 }
 
-div#listendltool_download > button:hover {
+button#listendltool_download:hover {
   background-color: silver;
 }

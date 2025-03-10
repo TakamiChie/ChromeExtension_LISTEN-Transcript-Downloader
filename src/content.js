@@ -11,14 +11,11 @@
         check.className = "transcript-checkbox";
         e.querySelector("h2").insertBefore(check, e.querySelector("h2 > a"));
       });
-      let div = document.createElement("div");
       let button = document.createElement("button");
-      let nav = document.querySelector("div nav");
       button.textContent = "文字起こしの一括ダウンロード";
       button.addEventListener("click", () => do_download());
-      div.id = BUTTON_ID;
-      div.appendChild(button);
-      nav.parentElement.insertBefore(div, nav);
+      button.id = BUTTON_ID;
+      document.body.appendChild(button);
     }
   }
 
