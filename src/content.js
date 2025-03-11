@@ -96,9 +96,14 @@
       alert("選択された文字起こしがありません。");
       return;
     }
-    for (const id of checkedIds) {
-      const { summary, title, url, date } = storageData[id];
+    // 日付順にソート
+    const sortedData = Object.entries(storageData).sort(([, a], [, b]) => {
+        if (a.date === "日付不明") return 1; // 日付不明は最後に配置
+        if (b.date === "日付不明") return -1; // 日付不明は最後に配置
+        return new Date(a.date) - new Date(b.date); // 日付順に並び替え
+    });
 
+    for (const [id, { summary, title, url, date }] of sortedData) {
       const transcriptUrl = url + "/transcript.txt";
 
       try {
