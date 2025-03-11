@@ -19,7 +19,7 @@ button#listendltool_download:hover {
 /* ダウンロードボタンとスピナーを囲むコンテナ */
 #listendltool_download_container {
   position: fixed;
-  top: 10px;
+  top: 70px;
   right: 10px;
   display: flex;
   gap: 10px; /* ボタンとスピナーの間隔を調整 */
@@ -29,6 +29,7 @@ button#listendltool_download:hover {
 /* スピナーのスタイル（必要に応じて調整） */
 #listendltool_sort_order {
     padding: 5px;
+    width: 5em;
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #fff;
