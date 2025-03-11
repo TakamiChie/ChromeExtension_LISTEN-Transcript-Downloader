@@ -8,8 +8,6 @@ button#listendltool_download {
   background: #e5e7eb;
   color: black;
   border: 1px solid black;
-  opacity: 0;
-  transition: all 0.5s;
 }
 
 button#listendltool_download:hover {
@@ -25,6 +23,8 @@ button#listendltool_download:hover {
   flex-wrap: wrap;
   gap: 10px; /* ボタンとスピナーの間隔を調整 */
   z-index: 1000; /* 他の要素よりも前面に表示 */
+  opacity: 0;
+  transition: all 0.5s;
 }
 
 /* スピナーのスタイル（必要に応じて調整） */

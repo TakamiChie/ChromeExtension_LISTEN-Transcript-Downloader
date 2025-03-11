@@ -66,7 +66,8 @@
   function updateButtonVisibility() {
     const button = document.getElementById(BUTTON_ID);
     if (button) {
-      button.style.opacity = Object.keys(loadStorageData()).length > 0 ? 1 : 0;
+      const container = document.getElementById(DOWNLOAD_CONTAINER_ID);
+      container.style.opacity = Object.keys(loadStorageData()).length > 0 ? 1 : 0;
     }
   }
 
