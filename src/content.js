@@ -3,6 +3,7 @@
   const STORAGE_KEY = "transcript_selection";
   const SORT_ORDER_KEY = "transcript_sort_order"; // ソート順序を保存するためのキー
   const DOWNLOAD_CONTAINER_ID = "listendltool_download_container"; // ダウンロードボタンとスピナーを囲むコンテナのID
+  const CLEAR_STORAGE_BUTTON_ID = "listendltool_clear_storage"; // ローカルストレージをクリアするボタンのID
 
   function addCheckBoxes(params) {
     if (isMyPodcast(window.location.href.split("?")[0])) {
@@ -31,6 +32,13 @@
       sortSelect.appendChild(optionAsc);
       sortSelect.addEventListener("change", handleSortOrderChange);
       downloadContainer.appendChild(sortSelect);
+
+      // ローカルストレージをクリアするボタンを追加
+      let clearStorageButton = document.createElement("button");
+      clearStorageButton.id = CLEAR_STORAGE_BUTTON_ID;
+      clearStorageButton.textContent = "選択をクリア";
+      clearStorageButton.addEventListener("click", clearLocalStorage);
+      downloadContainer.appendChild(clearStorageButton);
 
       // ソート順序を復元
       restoreSortOrder(sortSelect);
@@ -185,6 +193,16 @@
     const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']");
     checkboxes.forEach(checkbox => {
       checkbox.checked = false
+    });
+    updateButtonVisibility();
+  }
+
+  // ローカルストレージをクリアする関数
+  function clearLocalStorage() {
+    localStorage.removeItem(STORAGE_KEY);
+    const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']");
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = false;
     });
     updateButtonVisibility();
   }
