@@ -1,16 +1,20 @@
 (function () {
   const BUTTON_ID = "listendltool_download";
+  const STORAGE_KEY = "transcript_selection";
 
   function addCheckBoxes(params) {
-    if(isMyPodcast(window.location.href.split("?")[0])) {
+    if (isMyPodcast(window.location.href.split("?")[0])) {
       // 自分が管理しているポッドキャストなら、チェックボックスと一括ダウンロードボタンを作成
       Array.from(document.querySelectorAll(".playable-episode")).forEach(e => {
         let check = document.createElement("input");
-        check.type ="checkbox";
+        check.type = "checkbox";
         check.id = `check_${e.dataset.episodeId}`;
         check.className = "transcript-checkbox";
-        check.addEventListener("change", updateButtonVisibility);
+        check.addEventListener("change", handleCheckboxChange); // イベントリスナーを更新
         e.querySelector("h2").insertBefore(check, e.querySelector("h2 > a"));
+
+        // ローカルストレージから状態を復元
+        restoreCheckboxState(check);
       });
       let button = document.createElement("button");
       button.textContent = "文字起こしの一括ダウンロード";
@@ -29,42 +33,81 @@
   function updateButtonVisibility() {
     const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']:checked");
     const button = document.getElementById(BUTTON_ID);
-    button.style.opacity = checkboxes.length > 0 ? 1 : 0;
+    if(button){
+      button.style.opacity = checkboxes.length > 0 ? 1 : 0;
+    }
+  }
+
+  // チェックボックスの状態変更時にローカルストレージに保存
+  function handleCheckboxChange(event) {
+    const checkbox = event.target;
+    saveCheckboxState(checkbox);
+    updateButtonVisibility();
+  }
+
+  // チェックボックスの状態をローカルストレージに保存
+  function saveCheckboxState(checkbox) {
+    const storageData = loadStorageData();
+    const parent = checkbox.parentElement;
+    const summaryElement = parent.parentElement?.parentElement?.querySelector("p");
+    const summary = summaryElement ? summaryElement.textContent.trim() : "概要なし";
+    const anchor = parent.querySelector("a");
+    if (!anchor) return;
+
+    const title = anchor.textContent.trim();
+    const url = anchor.href;
+
+    // 配信日を取得
+    let dateDiv = summaryElement?.previousElementSibling;
+    let rawDate = dateDiv ? dateDiv.childNodes[0].textContent.trim() : null;
+    let formattedEpisodeDate = rawDate ? dateToStr(new Date(rawDate), "-") : "日付不明";
+
+    if (checkbox.checked) {
+      storageData[checkbox.id] = { summary, title, url, date: formattedEpisodeDate};
+    } else {
+      delete storageData[checkbox.id];
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(storageData));
+  }
+
+  // ローカルストレージからチェックボックスの状態を復元
+  function restoreCheckboxState(checkbox) {
+    const storageData = loadStorageData();
+    if (storageData[checkbox.id]) {
+      checkbox.checked = true;
+    }
+    updateButtonVisibility();
+  }
+
+  // ローカルストレージからデータをロード
+  function loadStorageData() {
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : {};
   }
 
   async function do_download(p) {
-    const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']:checked");
+    const storageData = loadStorageData();
     const today = new Date();
     const formattedDate = dateToStr(today);
     let transcriptData = [];
 
-    for (let checkbox of checkboxes) {
-      let parent = checkbox.parentElement;
+    const checkedIds = Object.keys(storageData);
+    if (checkedIds.length === 0){
+      alert("選択された文字起こしがありません。");
+      return;
+    }
+    for (const id of checkedIds) {
+      const { summary, title, url, date } = storageData[id];
 
-      // `parentElement` を2回たどって、その配下の `p` タグを取得
-      let summaryElement = parent.parentElement?.parentElement?.querySelector("p");
-      let summary = summaryElement ? summaryElement.textContent.trim() : "概要なし";
-
-      // 配信日を取得（pタグの一つ上のdivの最初のテキストノード）
-      let dateDiv = summaryElement?.previousElementSibling;
-      let rawDate = dateDiv ? dateDiv.childNodes[0].textContent.trim() : null;
-      let formattedEpisodeDate = rawDate ? dateToStr(new Date(rawDate), "-") : "日付不明";
-
-      // 隣接する `a` タグを取得
-      let anchor = parent.querySelector("a");
-      if (!anchor) continue;
-
-      const transcriptUrl = anchor.href + "/transcript.txt";
+      const transcriptUrl = url + "/transcript.txt";
 
       try {
         const response = await fetch(transcriptUrl);
         if (!response.ok) throw new Error("Failed to download: " + transcriptUrl);
 
         const text = await response.text();
-        const title = anchor.textContent.trim();
-        const date = formattedEpisodeDate
 
-        transcriptData.push(`# ${date} ${title}\n${anchor.href}\n\n${summary}\n\n${text}`);
+        transcriptData.push(`# ${date} ${title}\n${url}\n\n${summary}\n\n${text}`);
       } catch (error) {
         console.error(error);
       }
@@ -83,6 +126,12 @@
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    localStorage.removeItem(STORAGE_KEY); //ダウンロード完了後にローカルストレージをクリア
+    const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']");
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false
+    });
+    updateButtonVisibility();
   }
 
   function isMyPodcast(url) {
@@ -100,5 +149,4 @@
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
-
 })();
