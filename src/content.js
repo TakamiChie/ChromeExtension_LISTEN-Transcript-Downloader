@@ -2,15 +2,21 @@
   const BUTTON_ID = "listendltool_download";
   const STORAGE_KEY = "transcript_selection";
   const SORT_ORDER_KEY = "transcript_sort_order"; // ソート順序を保存するためのキー
+  const DOWNLOAD_CONTAINER_ID = "listendltool_download_container"; // ダウンロードボタンとスピナーを囲むコンテナのID
 
   function addCheckBoxes(params) {
     if (isMyPodcast(window.location.href.split("?")[0])) {
+      // ダウンロードボタンとスピナーを囲むコンテナを作成
+      let downloadContainer = document.createElement("div");
+      downloadContainer.id = DOWNLOAD_CONTAINER_ID;
+      document.querySelector("main").appendChild(downloadContainer);
+
       // 自分が管理しているポッドキャストなら、チェックボックスと一括ダウンロードボタンを作成
       let button = document.createElement("button");
       button.textContent = "文字起こしの一括ダウンロード";
       button.addEventListener("click", () => do_download());
       button.id = BUTTON_ID;
-      document.body.appendChild(button);
+      downloadContainer.appendChild(button);
 
       // スピナーの追加
       let sortSelect = document.createElement("select");
@@ -24,7 +30,7 @@
       sortSelect.appendChild(optionDesc);
       sortSelect.appendChild(optionAsc);
       sortSelect.addEventListener("change", handleSortOrderChange);
-      document.body.appendChild(sortSelect);
+      downloadContainer.appendChild(sortSelect);
 
       // ソート順序を復元
       restoreSortOrder(sortSelect);
@@ -193,7 +199,7 @@
   }
 
   const observer = new MutationObserver(() => {
-    if (!document.getElementById(BUTTON_ID) && document.querySelector('div[x-data=newPlayer]')) {
+    if (!document.getElementById(DOWNLOAD_CONTAINER_ID) && document.querySelector('div[x-data=newPlayer]')) {
       addCheckBoxes();
     }
   });
