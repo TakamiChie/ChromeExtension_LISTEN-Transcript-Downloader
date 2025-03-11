@@ -1,6 +1,7 @@
 (function () {
   const BUTTON_ID = "listendltool_download";
   const STORAGE_KEY = "transcript_selection";
+  const SORT_ORDER_KEY = "transcript_sort_order"; // ソート順序を保存するためのキー
 
   function addCheckBoxes(params) {
     if (isMyPodcast(window.location.href.split("?")[0])) {
@@ -10,6 +11,23 @@
       button.addEventListener("click", () => do_download());
       button.id = BUTTON_ID;
       document.body.appendChild(button);
+
+      // スピナーの追加
+      let sortSelect = document.createElement("select");
+      sortSelect.id = "listendltool_sort_order";
+      let optionDesc = document.createElement("option");
+      optionDesc.value = "desc";
+      optionDesc.text = "降順";
+      let optionAsc = document.createElement("option");
+      optionAsc.value = "asc";
+      optionAsc.text = "昇順";
+      sortSelect.appendChild(optionDesc);
+      sortSelect.appendChild(optionAsc);
+      sortSelect.addEventListener("change", handleSortOrderChange);
+      document.body.appendChild(sortSelect);
+
+      // ソート順序を復元
+      restoreSortOrder(sortSelect);
 
       Array.from(document.querySelectorAll(".playable-episode")).forEach(e => {
         let check = document.createElement("input");
@@ -33,7 +51,7 @@
 
   function updateButtonVisibility() {
     const button = document.getElementById(BUTTON_ID);
-    if(button){
+    if (button) {
       button.style.opacity = Object.keys(loadStorageData()).length > 0 ? 1 : 0;
     }
   }
@@ -63,7 +81,7 @@
     let formattedEpisodeDate = rawDate ? dateToStr(new Date(rawDate), "-") : "日付不明";
 
     if (checkbox.checked) {
-      storageData[checkbox.id] = { summary, title, url, date: formattedEpisodeDate};
+      storageData[checkbox.id] = { summary, title, url, date: formattedEpisodeDate };
     } else {
       delete storageData[checkbox.id];
     }
@@ -85,6 +103,22 @@
     return data ? JSON.parse(data) : {};
   }
 
+  // ソート順序の変更をローカルストレージに保存
+  function handleSortOrderChange(event) {
+    const sortOrder = event.target.value;
+    localStorage.setItem(SORT_ORDER_KEY, sortOrder);
+  }
+
+  // ソート順序をローカルストレージから復元
+  function restoreSortOrder(selectElement) {
+    const sortOrder = localStorage.getItem(SORT_ORDER_KEY);
+    if (sortOrder) {
+      selectElement.value = sortOrder;
+    } else {
+      selectElement.value = "desc"; // デフォルトは降順
+    }
+  }
+
   async function do_download(p) {
     const storageData = loadStorageData();
     const today = new Date();
@@ -92,15 +126,25 @@
     let transcriptData = [];
 
     const checkedIds = Object.keys(storageData);
-    if (checkedIds.length === 0){
+    if (checkedIds.length === 0) {
       alert("選択された文字起こしがありません。");
       return;
     }
+
+    // ソート順序を取得
+    const sortOrder = localStorage.getItem(SORT_ORDER_KEY) || "desc"; // デフォルトは降順
+
     // 日付順にソート
     const sortedData = Object.entries(storageData).sort(([, a], [, b]) => {
-        if (a.date === "日付不明") return 1; // 日付不明は最後に配置
-        if (b.date === "日付不明") return -1; // 日付不明は最後に配置
-        return new Date(a.date) - new Date(b.date); // 日付順に並び替え
+      if (a.date === "日付不明") return 1; // 日付不明は最後に配置
+      if (b.date === "日付不明") return -1; // 日付不明は最後に配置
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      if (sortOrder === "asc") {
+        return dateA - dateB; // 昇順
+      } else {
+        return dateB - dateA; // 降順
+      }
     });
 
     for (const [id, { summary, title, url, date }] of sortedData) {
@@ -134,7 +178,7 @@
     localStorage.removeItem(STORAGE_KEY); //ダウンロード完了後にローカルストレージをクリア
     const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']");
     checkboxes.forEach(checkbox => {
-        checkbox.checked = false
+      checkbox.checked = false
     });
     updateButtonVisibility();
   }
