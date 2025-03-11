@@ -29,7 +29,7 @@
   function updateButtonVisibility() {
     const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']:checked");
     const button = document.getElementById(BUTTON_ID);
-    button.style.display = checkboxes.length > 0 ? "block" : "none";
+    button.style.opacity = checkboxes.length > 0 ? 1 : 0;
   }
 
   async function do_download(p) {
