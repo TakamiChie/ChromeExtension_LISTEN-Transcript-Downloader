@@ -86,7 +86,7 @@
   }
 
   function isMyPodcast(url) {
-    let myPodcasts = Array.from(document.querySelectorAll("nav > div a"))
+    let myPodcasts = Array.from(document.querySelectorAll("body > div > nav > div a"))
       .map(a => a.href)
       .filter(href => href.startsWith("https://listen.style/p/"))
       .map(href => href.split("?")[0])
