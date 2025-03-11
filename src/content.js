@@ -5,6 +5,12 @@
   function addCheckBoxes(params) {
     if (isMyPodcast(window.location.href.split("?")[0])) {
       // 自分が管理しているポッドキャストなら、チェックボックスと一括ダウンロードボタンを作成
+      let button = document.createElement("button");
+      button.textContent = "文字起こしの一括ダウンロード";
+      button.addEventListener("click", () => do_download());
+      button.id = BUTTON_ID;
+      document.body.appendChild(button);
+
       Array.from(document.querySelectorAll(".playable-episode")).forEach(e => {
         let check = document.createElement("input");
         check.type = "checkbox";
@@ -16,11 +22,6 @@
         // ローカルストレージから状態を復元
         restoreCheckboxState(check);
       });
-      let button = document.createElement("button");
-      button.textContent = "文字起こしの一括ダウンロード";
-      button.addEventListener("click", () => do_download());
-      button.id = BUTTON_ID;
-      document.body.appendChild(button);
     }
   }
 
@@ -31,10 +32,9 @@
   }
 
   function updateButtonVisibility() {
-    const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']:checked");
     const button = document.getElementById(BUTTON_ID);
     if(button){
-      button.style.opacity = checkboxes.length > 0 ? 1 : 0;
+      button.style.opacity = Object.keys(loadStorageData()).length > 0 ? 1 : 0;
     }
   }
 
