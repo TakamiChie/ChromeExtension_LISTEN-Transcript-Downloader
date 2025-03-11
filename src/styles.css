@@ -1,19 +1,57 @@
+/* styles.css */
 .transcript-checkbox {
   transform: scale(1.2);
 }
 
 button#listendltool_download {
-  position: fixed;
-  top: 10px;
-  right: 10px;
   padding: 10px;
-  background: #e5e7eb;;
+  background: #e5e7eb;
   color: black;
   border: 1px solid black;
+}
+
+button#listendltool_download:hover {
+  background-color: silver;
+}
+
+/* ダウンロードボタンとスピナーを囲むコンテナ */
+#listendltool_download_container {
+  position: fixed;
+  top: 70px;
+  right: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* ボタンとスピナーの間隔を調整 */
+  z-index: 1000; /* 他の要素よりも前面に表示 */
   opacity: 0;
   transition: all 0.5s;
 }
 
-button#listendltool_download:hover {
+/* スピナーのスタイル（必要に応じて調整） */
+#listendltool_sort_order {
+    padding: 5px;
+    width: 5em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+    appearance: none; /* デフォルトのスタイルを削除 */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6'%3E%3Cpath d='M1 1l3 4 3-4z' fill='%23333'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 5px center;
+}
+
+/* ローカルストレージをクリアするボタンのスタイル */
+#listendltool_clear_storage {
+  padding: 10px;
+  background: #e5e7eb;
+  color: black;
+  border: 1px solid black;
+  transition: all 0.5s;
+}
+
+#listendltool_clear_storage:hover {
   background-color: silver;
 }
