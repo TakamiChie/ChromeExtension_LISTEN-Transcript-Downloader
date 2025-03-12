@@ -67,7 +67,9 @@
     const button = document.getElementById(BUTTON_ID);
     if (button) {
       const container = document.getElementById(DOWNLOAD_CONTAINER_ID);
-      container.style.opacity = Object.keys(loadStorageData()).length > 0 ? 1 : 0;
+      const hasData = Object.keys(loadStorageData()).length > 0;
+      container.style.opacity = hasData ? 1 : 0;
+      container.style.visibility = hasData ? "visible" : "hidden" ;
     }
   }
 
