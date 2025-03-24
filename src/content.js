@@ -140,13 +140,16 @@
   }
 
   async function do_download(p) {
-    await chrome.storage.sync.get(['fileExtension', 'fileFormat'], async(setting) => {
+    await chrome.storage.sync.get(['fileExtension', 'fileFormat', 'includeUrl', 'includeSummary', 'includePodcastName'], async(setting) => {
       const storageData = loadStorageData();
       const today = new Date();
       const formattedDate = dateToStr(today);
       let transcriptData = [];
       const fileFormat = setting.fileFormat || ".txt";
       const fileExtension = setting.fileExtension || ".txt";
+      const includeUrl = setting.includeUrl !== undefined ? setting.includeUrl : true;
+      const includeSummary = setting.includeSummary !== undefined ? setting.includeSummary : true;
+      const includePodcastName = setting.includePodcastName !== undefined ? setting.includePodcastName : true;
 
       const checkedIds = Object.keys(storageData);
       if (checkedIds.length === 0) {
@@ -179,7 +182,19 @@
 
           const text = await response.text();
 
-          transcriptData.push(`# ${date} ${title}\n${url}\n\n${summary}\n\n${text}`);
+          let transcriptEntry = `\n# ${date}`;
+          if (includePodcastName) {
+            transcriptEntry += `  ${podcastName}`;
+          }
+          transcriptEntry +=  ` ${title}\n`;
+          if (includeUrl) {
+            transcriptEntry += `${url}\n`;
+          }
+          if (includeSummary) {
+            transcriptEntry += `\n${summary}\n`;
+          }
+          transcriptEntry += `\n${text}`;
+          transcriptData.push(transcriptEntry);
         } catch (error) {
           console.error(error);
         }
