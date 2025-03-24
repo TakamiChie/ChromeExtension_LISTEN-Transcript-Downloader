@@ -97,8 +97,11 @@
     let rawDate = dateDiv ? dateDiv.childNodes[0].textContent.trim() : null;
     let formattedEpisodeDate = rawDate ? dateToStr(new Date(rawDate), "-") : "日付不明";
 
+    // ポッドキャスト名を取得
+    const podcastName = document.title.replace("- LISTEN", "").trim();
+
     if (checkbox.checked) {
-      storageData[checkbox.id] = { summary, title, url, date: formattedEpisodeDate };
+      storageData[checkbox.id] = { summary, title, url, date: formattedEpisodeDate, podcastName: podcastName };
     } else {
       delete storageData[checkbox.id];
     }
@@ -137,13 +140,16 @@
   }
 
   async function do_download(p) {
-    await chrome.storage.sync.get(['fileExtension', 'fileFormat'], async(setting) => {
+    await chrome.storage.sync.get(['fileExtension', 'fileFormat', 'includeUrl', 'includeSummary', 'includePodcastName'], async(setting) => {
       const storageData = loadStorageData();
       const today = new Date();
       const formattedDate = dateToStr(today);
       let transcriptData = [];
       const fileFormat = setting.fileFormat || ".txt";
       const fileExtension = setting.fileExtension || ".txt";
+      const includeUrl = setting.includeUrl !== undefined ? setting.includeUrl : true;
+      const includeSummary = setting.includeSummary !== undefined ? setting.includeSummary : true;
+      const includePodcastName = setting.includePodcastName !== undefined ? setting.includePodcastName : true;
 
       const checkedIds = Object.keys(storageData);
       if (checkedIds.length === 0) {
@@ -167,7 +173,7 @@
         }
       });
 
-      for (const [id, { summary, title, url, date }] of sortedData) {
+      for (const [id, { summary, title, url, date, podcastName }] of sortedData) {
         const transcriptUrl = `${url}/transcript${fileFormat}`;
 
         try {
@@ -176,7 +182,19 @@
 
           const text = await response.text();
 
-          transcriptData.push(`# ${date} ${title}\n${url}\n\n${summary}\n\n${text}`);
+          let transcriptEntry = `\n# ${date}`;
+          if (includePodcastName) {
+            transcriptEntry += `  ${podcastName}`;
+          }
+          transcriptEntry +=  ` ${title}\n`;
+          if (includeUrl) {
+            transcriptEntry += `${url}\n`;
+          }
+          if (includeSummary) {
+            transcriptEntry += `\n${summary}\n`;
+          }
+          transcriptEntry += `\n${text}`;
+          transcriptData.push(transcriptEntry);
         } catch (error) {
           console.error(error);
         }

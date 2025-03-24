@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LISTEN Transcript Downloader</title>
-  <link rel="stylesheet" href="popup.css"> </link>
+  <link rel="stylesheet" href="popup.css">
   <script src="popup.js" defer></script>
 </head>
 <body>
@@ -25,6 +25,21 @@
       <option value=".vtt">.vtt</option>
       <option value=".srt">.srt</option>
     </select>
+  </div>
+
+  <div class="setting-row">
+    <input type="checkbox" id="include-url" checked>
+    <label for="include-url">URLを含める</label>
+  </div>
+
+  <div class="setting-row">
+    <input type="checkbox" id="include-summary" checked>
+    <label for="include-summary">概要を含める</label>
+  </div>
+
+  <div class="setting-row">
+    <input type="checkbox" id="include-podcast-name" checked>
+    <label for="include-podcast-name">ポッドキャスト名を含める</label>
   </div>
 </body>
 </html>
