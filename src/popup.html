@@ -4,21 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LISTEN Transcript Downloader</title>
+  <link rel="stylesheet" href="popup.css"> </link>
   <script src="popup.js" defer></script>
 </head>
 <body>
   <h1>LISTEN Downloader | 設定</h1>
 
-  <div>
-    <label for="file-extension">ダウンロードファイルの拡張子:</label>
+  <div class="setting-row">
+    <label for="file-extension">ダウンロードファイルの拡張子</label>
     <select id="file-extension">
       <option value=".txt">.txt</option>
       <option value=".md">.md</option>
     </select>
   </div>
 
-  <div>
-    <label for="file-format">ダウンロード対象のファイル形式:</label>
+  <div class="setting-row">
+    <label for="file-format">ダウンロード対象のファイル形式</label>
     <select id="file-format">
       <option value=".txt">.txt</option>
       <option value=".vtt">.vtt</option>
