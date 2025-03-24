@@ -1,0 +1,22 @@
+/* src/styles.css */
+
+body {
+  width: 300px; /* ポップアップの幅を設定 */
+  padding: 10px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px; /* 行間のスペースを追加 */
+}
+
+.setting-row label {
+  width: 180px; /* ラベルの幅を固定 */
+  text-align: left; /* ラベルのテキストを右寄せ */
+  margin-right: 10px; /* ラベルとセレクトボックスの間のスペース */
+}
+
+.setting-row select {
+  flex-grow: 1; /* セレクトボックスが残りのスペースを埋める */
+}

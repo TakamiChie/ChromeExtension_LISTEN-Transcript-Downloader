@@ -3,7 +3,7 @@
   "name": "LISTEN Transcript Downloader",
   "version": "1.0",
   "description": "LISTENでポッドキャストの文字起こしを一括ダウンロード",
-  "permissions": ["downloads", "activeTab", "scripting"],
+  "permissions": ["downloads", "activeTab", "scripting", "storage"],
   "host_permissions": ["https://listen.style/p/*"],
   "background": {
     "service_worker": "background.js"

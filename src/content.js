@@ -137,67 +137,71 @@
   }
 
   async function do_download(p) {
-    const storageData = loadStorageData();
-    const today = new Date();
-    const formattedDate = dateToStr(today);
-    let transcriptData = [];
+    await chrome.storage.sync.get(['fileExtension', 'fileFormat'], async(setting) => {
+      const storageData = loadStorageData();
+      const today = new Date();
+      const formattedDate = dateToStr(today);
+      let transcriptData = [];
+      const fileFormat = setting.fileFormat || ".txt";
+      const fileExtension = setting.fileExtension || ".txt";
 
-    const checkedIds = Object.keys(storageData);
-    if (checkedIds.length === 0) {
-      alert("選択された文字起こしがありません。");
-      return;
-    }
-
-    // ソート順序を取得
-    const sortOrder = localStorage.getItem(SORT_ORDER_KEY) || "desc"; // デフォルトは降順
-
-    // 日付順にソート
-    const sortedData = Object.entries(storageData).sort(([, a], [, b]) => {
-      if (a.date === "日付不明") return 1; // 日付不明は最後に配置
-      if (b.date === "日付不明") return -1; // 日付不明は最後に配置
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      if (sortOrder === "asc") {
-        return dateA - dateB; // 昇順
-      } else {
-        return dateB - dateA; // 降順
+      const checkedIds = Object.keys(storageData);
+      if (checkedIds.length === 0) {
+        alert("選択された文字起こしがありません。");
+        return;
       }
-    });
 
-    for (const [id, { summary, title, url, date }] of sortedData) {
-      const transcriptUrl = url + "/transcript.txt";
+      // ソート順序を取得
+      const sortOrder = localStorage.getItem(SORT_ORDER_KEY) || "desc"; // デフォルトは降順
 
-      try {
-        const response = await fetch(transcriptUrl);
-        if (!response.ok) throw new Error("Failed to download: " + transcriptUrl);
+      // 日付順にソート
+      const sortedData = Object.entries(storageData).sort(([, a], [, b]) => {
+        if (a.date === "日付不明") return 1; // 日付不明は最後に配置
+        if (b.date === "日付不明") return -1; // 日付不明は最後に配置
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        if (sortOrder === "asc") {
+          return dateA - dateB; // 昇順
+        } else {
+          return dateB - dateA; // 降順
+        }
+      });
 
-        const text = await response.text();
+      for (const [id, { summary, title, url, date }] of sortedData) {
+        const transcriptUrl = `${url}/transcript${fileFormat}`;
 
-        transcriptData.push(`# ${date} ${title}\n${url}\n\n${summary}\n\n${text}`);
-      } catch (error) {
-        console.error(error);
+        try {
+          const response = await fetch(transcriptUrl);
+          if (!response.ok) throw new Error("Failed to download: " + transcriptUrl);
+
+          const text = await response.text();
+
+          transcriptData.push(`# ${date} ${title}\n${url}\n\n${summary}\n\n${text}`);
+        } catch (error) {
+          console.error(error);
+        }
       }
-    }
 
-    if (transcriptData.length === 0) {
-      alert("選択された文字起こしがありません。");
-      return;
-    }
+      if (transcriptData.length === 0) {
+        alert("選択された文字起こしがありません。");
+        return;
+      }
 
-    const finalText = transcriptData.join("\n\n");
-    const blob = new Blob([finalText], { type: "text/plain" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${formattedDate}_summary.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    localStorage.removeItem(STORAGE_KEY); //ダウンロード完了後にローカルストレージをクリア
-    const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']");
-    checkboxes.forEach(checkbox => {
-      checkbox.checked = false
+      const finalText = transcriptData.join("\n\n");
+      const blob = new Blob([finalText], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${formattedDate}_summary${fileExtension}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      localStorage.removeItem(STORAGE_KEY); //ダウンロード完了後にローカルストレージをクリア
+      const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']");
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = false
+      });
+      updateButtonVisibility();
     });
-    updateButtonVisibility();
   }
 
   // ローカルストレージをクリアする関数
