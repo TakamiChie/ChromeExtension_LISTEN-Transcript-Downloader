@@ -5,6 +5,13 @@
   const DOWNLOAD_CONTAINER_ID = "listendltool_download_container"; // ダウンロードボタンとスピナーを囲むコンテナのID
   const CLEAR_STORAGE_BUTTON_ID = "listendltool_clear_storage"; // ローカルストレージをクリアするボタンのID
 
+  // popup.js からのメッセージを受信してローカルストレージをクリア
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'clearLocalStorage') {
+      clearLocalStorage();
+    }
+  });
+
   function addCheckBoxes(params) {
     if (isMyPodcast(window.location.href.split("?")[0])) {
       // ダウンロードボタンとスピナーを囲むコンテナを作成

@@ -14,8 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
       fileFormat: fileFormat,
     }, () => {
       console.log('Options saved:', { fileExtension, fileFormat });
-      // 保存完了時のフィードバックが必要であれば、ここに処理を追加
-      // 例：保存完了メッセージを表示するなど
+
+      // LISTEN のタブを探してメッセージを送信
+      chrome.tabs.query({ url: 'https://listen.style/*' }, (tabs) => {
+        tabs.forEach((tab) => {
+          chrome.tabs.sendMessage(tab.id, { action: 'clearLocalStorage' });
+        });
+      });
     });
   };
 
