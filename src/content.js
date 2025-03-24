@@ -97,8 +97,11 @@
     let rawDate = dateDiv ? dateDiv.childNodes[0].textContent.trim() : null;
     let formattedEpisodeDate = rawDate ? dateToStr(new Date(rawDate), "-") : "日付不明";
 
+    // ポッドキャスト名を取得
+    const podcastName = document.title.replace("- LISTEN", "").trim();
+
     if (checkbox.checked) {
-      storageData[checkbox.id] = { summary, title, url, date: formattedEpisodeDate };
+      storageData[checkbox.id] = { summary, title, url, date: formattedEpisodeDate, podcastName: podcastName };
     } else {
       delete storageData[checkbox.id];
     }
@@ -167,7 +170,7 @@
         }
       });
 
-      for (const [id, { summary, title, url, date }] of sortedData) {
+      for (const [id, { summary, title, url, date, podcastName }] of sortedData) {
         const transcriptUrl = `${url}/transcript${fileFormat}`;
 
         try {
