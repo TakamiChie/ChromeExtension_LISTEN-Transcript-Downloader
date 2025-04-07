@@ -44,7 +44,7 @@
       restoreSortOrder(sortSelect);
 
       // 検索結果ページには.playable-episodeがない＝見つからなかった場合.items-startを探す
-      let targetNodes = document.querySelectorAll(".playable-episode")
+      let targetNodes = document.querySelectorAll(".playable-episode");
       if (targetNodes.length === 0) {
         targetNodes = document.querySelectorAll("main > div > div:nth-child(2) .items-start");
         if (targetNodes.length === 0) {
