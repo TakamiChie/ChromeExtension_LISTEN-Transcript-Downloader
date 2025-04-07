@@ -97,6 +97,12 @@
     const storageData = loadStorageData();
     const parent = checkbox.parentElement;
     const summaryElement = parent.parentElement?.parentElement?.querySelector("p");
+    /*
+     * # 検索ページの概要欄について
+     * 検索ページの概要欄には検索にヒットした部分の抜粋が出てくる為、この方法では概要が取得できない
+     * もちろんRSSやエピソードページには概要が記述されているのでそれを読むこともできるが、ダウンロードするファイル数が増えてしまう為、あまり効率的ではない。
+     * ひとまずこのまま実装しておいて、もし要望があればダウンロードを増やしてでも概要を解決するかどうか選べるようにするぐらいでどうか。
+     */
     const summary = summaryElement ? summaryElement.textContent.trim() : "概要なし";
     const anchor = parent.querySelector("a");
     if (!anchor) return;
@@ -253,10 +259,7 @@
     return myPodcasts.some(href => url.startsWith(href));
   }
 
-  const observer = new MutationObserver(() => {
-    if (!document.getElementById(DOWNLOAD_CONTAINER_ID) && document.querySelector('div[x-data=newPlayer]')) {
-      addCheckBoxes();
-    }
+  document.addEventListener("DOMContentLoaded", () => {
+    addCheckBoxes();
   });
-  observer.observe(document.body, { childList: true, subtree: true });
 })();
