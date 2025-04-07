@@ -53,12 +53,15 @@
       }
 
       Array.from(targetNodes).forEach(e => {
+        const a = e.querySelector("h2 > a");
+        if (!a) return; // a要素が見つからない場合はスキップ
+        const episodeId = a.href.split("/").pop();
         let check = document.createElement("input");
         check.type = "checkbox";
-        check.id = `check_${e.dataset.episodeId}`;
+        check.id = `check_${episodeId}`;
         check.className = "transcript-checkbox";
         check.addEventListener("change", handleCheckboxChange); // イベントリスナーを更新
-        e.querySelector("h2").insertBefore(check, e.querySelector("h2 > a"));
+        e.querySelector("h2").insertBefore(check, a);
 
         // ローカルストレージから状態を復元
         restoreCheckboxState(check);
