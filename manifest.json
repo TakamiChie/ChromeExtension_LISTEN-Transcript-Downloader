@@ -19,7 +19,9 @@
   "content_scripts": [
     {
       "matches": ["https://listen.style/p/*"],
+      "include_globs": [ "https://listen.style/p/*"],
       "js": ["src/content.js"],
+      "run_at": "document_start",
       "css": ["src/styles.css"]
     }
   ]

@@ -43,13 +43,26 @@
       // ソート順序を復元
       restoreSortOrder(sortSelect);
 
-      Array.from(document.querySelectorAll(".playable-episode")).forEach(e => {
+      // 検索結果ページには.playable-episodeがない＝見つからなかった場合.items-startを探す
+      let targetNodes = document.querySelectorAll(".playable-episode");
+      if (targetNodes.length === 0) {
+        targetNodes = document.querySelectorAll("main > div > div:nth-child(2) .items-start");
+        if (targetNodes.length === 0) {
+          console.log("再生可能なエピソードが見つかりませんでした。");
+        }
+      }
+
+      const extractEpisodeId = u => u.split`/p/`[1].split`/`.join``;
+      Array.from(targetNodes).forEach(e => {
+        const a = e.querySelector("h2 > a");
+        if (!a) return; // a要素が見つからない場合はスキップ
+        const episodeId = extractEpisodeId(a.href);
         let check = document.createElement("input");
         check.type = "checkbox";
-        check.id = `check_${e.dataset.episodeId}`;
+        check.id = `check_${episodeId}`;
         check.className = "transcript-checkbox";
         check.addEventListener("change", handleCheckboxChange); // イベントリスナーを更新
-        e.querySelector("h2").insertBefore(check, e.querySelector("h2 > a"));
+        e.querySelector("h2").insertBefore(check, a);
 
         // ローカルストレージから状態を復元
         restoreCheckboxState(check);
@@ -85,6 +98,12 @@
     const storageData = loadStorageData();
     const parent = checkbox.parentElement;
     const summaryElement = parent.parentElement?.parentElement?.querySelector("p");
+    /*
+     * # 検索ページの概要欄について
+     * 検索ページの概要欄には検索にヒットした部分の抜粋が出てくる為、この方法では概要が取得できない
+     * もちろんRSSやエピソードページには概要が記述されているのでそれを読むこともできるが、ダウンロードするファイル数が増えてしまう為、あまり効率的ではない。
+     * ひとまずこのまま実装しておいて、もし要望があればダウンロードを増やしてでも概要を解決するかどうか選べるようにするぐらいでどうか。
+     */
     const summary = summaryElement ? summaryElement.textContent.trim() : "概要なし";
     const anchor = parent.querySelector("a");
     if (!anchor) return;
@@ -241,10 +260,7 @@
     return myPodcasts.some(href => url.startsWith(href));
   }
 
-  const observer = new MutationObserver(() => {
-    if (!document.getElementById(DOWNLOAD_CONTAINER_ID) && document.querySelector('div[x-data=newPlayer]')) {
-      addCheckBoxes();
-    }
+  document.addEventListener("DOMContentLoaded", () => {
+    addCheckBoxes();
   });
-  observer.observe(document.body, { childList: true, subtree: true });
 })();
