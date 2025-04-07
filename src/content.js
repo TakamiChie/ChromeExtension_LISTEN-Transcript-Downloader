@@ -52,11 +52,11 @@
         }
       }
 
-      const f=u=>u.split`/p/`[1].split`/`.join``;
+      const extractEpisodeId = u => u.split`/p/`[1].split`/`.join``;
       Array.from(targetNodes).forEach(e => {
         const a = e.querySelector("h2 > a");
         if (!a) return; // a要素が見つからない場合はスキップ
-        const episodeId = f(a.href);
+        const episodeId = extractEpisodeId(a.href);
         let check = document.createElement("input");
         check.type = "checkbox";
         check.id = `check_${episodeId}`;
