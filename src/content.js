@@ -43,7 +43,16 @@
       // ソート順序を復元
       restoreSortOrder(sortSelect);
 
-      Array.from(document.querySelectorAll(".playable-episode")).forEach(e => {
+      // 検索結果ページには.playable-episodeがない＝見つからなかった場合.items-startを探す
+      let targetNodes = document.querySelectorAll(".playable-episode")
+      if (targetNodes.length === 0) {
+        targetNodes = document.querySelectorAll("main > div > div:nth-child(2) .items-start");
+        if (targetNodes.length === 0) {
+          console.log("再生可能なエピソードが見つかりませんでした。");
+        }
+      }
+
+      Array.from(targetNodes).forEach(e => {
         let check = document.createElement("input");
         check.type = "checkbox";
         check.id = `check_${e.dataset.episodeId}`;
