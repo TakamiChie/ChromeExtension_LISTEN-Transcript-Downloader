@@ -1,5 +1,6 @@
 (function () {
   const BUTTON_ID = "listendltool_download";
+  const COPYBUTTON_ID = "listendltool_copy";
   const STORAGE_KEY = "transcript_selection";
   const SORT_ORDER_KEY = "transcript_sort_order"; // ソート順序を保存するためのキー
   const DOWNLOAD_CONTAINER_ID = "listendltool_download_container"; // ダウンロードボタンとスピナーを囲むコンテナのID
@@ -11,6 +12,13 @@
       let downloadContainer = document.createElement("div");
       downloadContainer.id = DOWNLOAD_CONTAINER_ID;
       document.querySelector("main").appendChild(downloadContainer);
+
+      // 文字起こしをクリップボードにコピーするボタンを追加
+      let copyButton = document.createElement("button");
+      copyButton.textContent = "文字起こしをコピー";
+      copyButton.addEventListener("click", () => do_copy());
+      copyButton.id = COPYBUTTON_ID;
+      downloadContainer.appendChild(copyButton);
 
       // 自分が管理しているポッドキャストなら、チェックボックスと一括ダウンロードボタンを作成
       let button = document.createElement("button");
