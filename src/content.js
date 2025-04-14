@@ -158,14 +158,27 @@
     }
   }
 
-  async function do_download(p) {
-    await chrome.storage.sync.get(['fileExtension', 'fileFormat', 'includeUrl', 'includeSummary', 'includePodcastName'], async(setting) => {
-      const storageData = loadStorageData();
+  async function do_download() {
+    const finalText = await get_transcript_text();
+    await chrome.storage.sync.get(['fileExtension'], (setting) => {
       const today = new Date();
       const formattedDate = dateToStr(today);
+      const fileExtension = setting.fileExtension || ".txt";
+      const blob = new Blob([finalText], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); 
+      a.download = `${formattedDate}_summary${fileExtension}`;
+      document.body.appendChild(a);
+      a.click();
+    });
+  }
+
+  async function get_transcript_text() {
+    return new Promise((resolve, reject) => {
+      chrome.storage.sync.get(['fileFormat', 'includeUrl', 'includeSummary', 'includePodcastName'], async(setting) => {
+      const storageData = loadStorageData();
       let transcriptData = [];
       const fileFormat = setting.fileFormat || ".txt";
-      const fileExtension = setting.fileExtension || ".txt";
       const includeUrl = setting.includeUrl !== undefined ? setting.includeUrl : true;
       const includeSummary = setting.includeSummary !== undefined ? setting.includeSummary : true;
       const includePodcastName = setting.includePodcastName !== undefined ? setting.includePodcastName : true;
@@ -225,19 +238,14 @@
       }
 
       const finalText = transcriptData.join("\n\n");
-      const blob = new Blob([finalText], { type: "text/plain" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${formattedDate}_summary${fileExtension}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
       localStorage.removeItem(STORAGE_KEY); //ダウンロード完了後にローカルストレージをクリア
       const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']");
       checkboxes.forEach(checkbox => {
         checkbox.checked = false
       });
       updateButtonVisibility();
+      resolve(finalText);
+      });
     });
   }
 
