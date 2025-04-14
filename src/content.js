@@ -7,7 +7,6 @@
   const CLEAR_STORAGE_BUTTON_ID = "listendltool_clear_storage"; // ローカルストレージをクリアするボタンのID
 
   function addCheckBoxes(params) {
-    if (isMyPodcast(window.location.href.split("?")[0])) {
       // ダウンロードボタンとスピナーを囲むコンテナを作成
       let downloadContainer = document.createElement("div");
       downloadContainer.id = DOWNLOAD_CONTAINER_ID;
@@ -75,7 +74,6 @@
         // ローカルストレージから状態を復元
         restoreCheckboxState(check);
       });
-    }
   }
 
   function dateToStr(date, separator = "") {
@@ -287,6 +285,8 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    if(isMyPodcast(window.location.href.split("?")[0])) {
     addCheckBoxes();
+    }
   });
 })();
