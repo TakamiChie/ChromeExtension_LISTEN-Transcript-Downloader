@@ -286,7 +286,7 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     if(isMyPodcast(window.location.href.split("?")[0])) {
-    addCheckBoxes();
+      addCheckBoxes();
     }
   });
 })();
