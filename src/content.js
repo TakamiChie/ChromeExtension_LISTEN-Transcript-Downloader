@@ -166,6 +166,16 @@
     }
   }
 
+  async function do_copy() {
+    const finalText = await get_transcript_text();
+    try {
+      await navigator.clipboard.writeText(finalText);
+      console.log('Text copied to clipboard');
+    } catch (error) {
+      console.error('Failed to copy text: ', err);
+    }
+  }
+
   async function do_download() {
     const finalText = await get_transcript_text();
     await chrome.storage.sync.get(['fileExtension'], (setting) => {
