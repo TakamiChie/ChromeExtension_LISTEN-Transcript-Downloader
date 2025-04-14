@@ -5,75 +5,107 @@
   const SORT_ORDER_KEY = "transcript_sort_order"; // ソート順序を保存するためのキー
   const DOWNLOAD_CONTAINER_ID = "listendltool_download_container"; // ダウンロードボタンとスピナーを囲むコンテナのID
   const CLEAR_STORAGE_BUTTON_ID = "listendltool_clear_storage"; // ローカルストレージをクリアするボタンのID
+  const extractEpisodeId = u => u.split`/p/`[1].split`/`.join``;
 
-  function addCheckBoxes(params) {
-      // ダウンロードボタンとスピナーを囲むコンテナを作成
-      let downloadContainer = document.createElement("div");
-      downloadContainer.id = DOWNLOAD_CONTAINER_ID;
-      document.querySelector("main").appendChild(downloadContainer);
+  function addCopyButton() {
+    let downloadContainer = document.createElement("div");
+    downloadContainer.id = DOWNLOAD_CONTAINER_ID;
+    document.querySelector("main").appendChild(downloadContainer);
 
-      // 文字起こしをクリップボードにコピーするボタンを追加
-      let copyButton = document.createElement("button");
-      copyButton.textContent = "文字起こしをコピー";
-      copyButton.addEventListener("click", () => do_copy());
-      copyButton.id = COPYBUTTON_ID;
-      downloadContainer.appendChild(copyButton);
+    // 文字起こしをクリップボードにコピーするボタンを追加
+    let copyButton = document.createElement("button");
+    copyButton.textContent = "文字起こしをコピー";
+    copyButton.addEventListener("click", () => {
+      // コンテントデータの取得
+      const summaryElement = document.querySelector("main div.mx-auto:nth-child(3)");
+      const summary = summaryElement ? summaryElement.innerText.trim() : "概要なし";
+      const title = document.querySelector("h1").textContent.trim();
+      const url =  location.href;
+      const id = `check_${extractEpisodeId(url)}`;
+      const dateElement = document.querySelector("main div.mx-auto:nth-child(1) div[x-data]:first-child").childNodes[0];
+      let formattedEpisodeDate = dateElement ? dateToStr(new Date(dateElement.textContent.trim()), "-") : "日付不明";
+      const podcastName = document.title.split("-").at(-2).trim();
+      let content = {};
+      content[id] = { summary, title, url, date: formattedEpisodeDate, podcastName: podcastName};
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
 
-      // 自分が管理しているポッドキャストなら、チェックボックスと一括ダウンロードボタンを作成
-      let button = document.createElement("button");
-      button.textContent = "文字起こしの一括ダウンロード";
-      button.addEventListener("click", () => do_download());
-      button.id = BUTTON_ID;
-      downloadContainer.appendChild(button);
+      do_copy();
+    });
+    copyButton.id = COPYBUTTON_ID;
+    downloadContainer.appendChild(copyButton);
 
-      // スピナーの追加
-      let sortSelect = document.createElement("select");
-      sortSelect.id = "listendltool_sort_order";
-      let optionDesc = document.createElement("option");
-      optionDesc.value = "desc";
-      optionDesc.text = "降順";
-      let optionAsc = document.createElement("option");
-      optionAsc.value = "asc";
-      optionAsc.text = "昇順";
-      sortSelect.appendChild(optionDesc);
-      sortSelect.appendChild(optionAsc);
-      sortSelect.addEventListener("change", handleSortOrderChange);
-      downloadContainer.appendChild(sortSelect);
+    const container = document.getElementById(DOWNLOAD_CONTAINER_ID);
+    container.style.opacity = 1;
+    container.style.visibility = "visible";
+  }
 
-      // ローカルストレージをクリアするボタンを追加
-      let clearStorageButton = document.createElement("button");
-      clearStorageButton.id = CLEAR_STORAGE_BUTTON_ID;
-      clearStorageButton.textContent = "選択をクリア";
-      clearStorageButton.addEventListener("click", clearLocalStorage);
-      downloadContainer.appendChild(clearStorageButton);
+  function addCheckBoxes() {
+    // ダウンロードボタンとスピナーを囲むコンテナを作成
+    let downloadContainer = document.createElement("div");
+    downloadContainer.id = DOWNLOAD_CONTAINER_ID;
+    document.querySelector("main").appendChild(downloadContainer);
 
-      // ソート順序を復元
-      restoreSortOrder(sortSelect);
+    // 文字起こしをクリップボードにコピーするボタンを追加
+    let copyButton = document.createElement("button");
+    copyButton.textContent = "文字起こしをコピー";
+    copyButton.addEventListener("click", () => do_copy());
+    copyButton.id = COPYBUTTON_ID;
+    downloadContainer.appendChild(copyButton);
 
-      // 検索結果ページには.playable-episodeがない＝見つからなかった場合.items-startを探す
-      let targetNodes = document.querySelectorAll(".playable-episode");
+    // 自分が管理しているポッドキャストなら、チェックボックスと一括ダウンロードボタンを作成
+    let button = document.createElement("button");
+    button.textContent = "文字起こしの一括ダウンロード";
+    button.addEventListener("click", () => do_download());
+    button.id = BUTTON_ID;
+    downloadContainer.appendChild(button);
+
+    // スピナーの追加
+    let sortSelect = document.createElement("select");
+    sortSelect.id = "listendltool_sort_order";
+    let optionDesc = document.createElement("option");
+    optionDesc.value = "desc";
+    optionDesc.text = "降順";
+    let optionAsc = document.createElement("option");
+    optionAsc.value = "asc";
+    optionAsc.text = "昇順";
+    sortSelect.appendChild(optionDesc);
+    sortSelect.appendChild(optionAsc);
+    sortSelect.addEventListener("change", handleSortOrderChange);
+    downloadContainer.appendChild(sortSelect);
+
+    // ローカルストレージをクリアするボタンを追加
+    let clearStorageButton = document.createElement("button");
+    clearStorageButton.id = CLEAR_STORAGE_BUTTON_ID;
+    clearStorageButton.textContent = "選択をクリア";
+    clearStorageButton.addEventListener("click", clearLocalStorage);
+    downloadContainer.appendChild(clearStorageButton);
+
+    // ソート順序を復元
+    restoreSortOrder(sortSelect);
+
+    // 検索結果ページには.playable-episodeがない＝見つからなかった場合.items-startを探す
+    let targetNodes = document.querySelectorAll(".playable-episode");
+    if (targetNodes.length === 0) {
+      targetNodes = document.querySelectorAll("main > div > div:nth-child(2) .items-start");
       if (targetNodes.length === 0) {
-        targetNodes = document.querySelectorAll("main > div > div:nth-child(2) .items-start");
-        if (targetNodes.length === 0) {
-          console.log("再生可能なエピソードが見つかりませんでした。");
-        }
+        console.log("再生可能なエピソードが見つかりませんでした。");
       }
+    }
 
-      const extractEpisodeId = u => u.split`/p/`[1].split`/`.join``;
-      Array.from(targetNodes).forEach(e => {
-        const a = e.querySelector("h2 > a");
-        if (!a) return; // a要素が見つからない場合はスキップ
-        const episodeId = extractEpisodeId(a.href);
-        let check = document.createElement("input");
-        check.type = "checkbox";
-        check.id = `check_${episodeId}`;
-        check.className = "transcript-checkbox";
-        check.addEventListener("change", handleCheckboxChange); // イベントリスナーを更新
-        e.querySelector("h2").insertBefore(check, a);
+    Array.from(targetNodes).forEach(e => {
+      const a = e.querySelector("h2 > a");
+      if (!a) return; // a要素が見つからない場合はスキップ
+      const episodeId = extractEpisodeId(a.href);
+      let check = document.createElement("input");
+      check.type = "checkbox";
+      check.id = `check_${episodeId}`;
+      check.className = "transcript-checkbox";
+      check.addEventListener("change", handleCheckboxChange); // イベントリスナーを更新
+      e.querySelector("h2").insertBefore(check, a);
 
-        // ローカルストレージから状態を復元
-        restoreCheckboxState(check);
-      });
+      // ローカルストレージから状態を復元
+      restoreCheckboxState(check);
+    });
   }
 
   function dateToStr(date, separator = "") {
@@ -286,7 +318,11 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     if(isMyPodcast(window.location.href.split("?")[0])) {
-      addCheckBoxes();
+      if(document.querySelector("article#transcript")){
+        addCopyButton();
+      }else{
+        addCheckBoxes();
+      }
     }
   });
 })();
