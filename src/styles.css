@@ -3,14 +3,14 @@
   transform: scale(1.2);
 }
 
-button#listendltool_download {
+#listendltool_download_container button {
   padding: 10px;
   background: #e5e7eb;
   color: black;
   border: 1px solid black;
 }
 
-button#listendltool_download:hover {
+#listendltool_download_container button:hover {
   background-color: silver;
 }
 
@@ -42,17 +42,4 @@ button#listendltool_download:hover {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6'%3E%3Cpath d='M1 1l3 4 3-4z' fill='%23333'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 5px center;
-}
-
-/* ローカルストレージをクリアするボタンのスタイル */
-#listendltool_clear_storage {
-  padding: 10px;
-  background: #e5e7eb;
-  color: black;
-  border: 1px solid black;
-  transition: all 0.5s;
-}
-
-#listendltool_clear_storage:hover {
-  background-color: silver;
 }
