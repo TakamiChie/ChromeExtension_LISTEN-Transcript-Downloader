@@ -235,7 +235,7 @@
       const checkedIds = Object.keys(storageData);
       if (checkedIds.length === 0) {
         alert("選択された文字起こしがありません。");
-        return;
+        reject("選択された文字起こしがありません。");
       }
 
       // ソート順序を取得
@@ -283,7 +283,7 @@
 
       if (transcriptData.length === 0) {
         alert("選択された文字起こしがありません。");
-        return;
+        reject("選択された文字起こしがありません。");
       }
 
       const finalText = transcriptData.join("\n\n");
