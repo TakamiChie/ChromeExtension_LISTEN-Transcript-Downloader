@@ -202,7 +202,7 @@
       await navigator.clipboard.writeText(finalText);
       console.log('Text copied to clipboard');
     } catch (error) {
-      console.error('Failed to copy text: ', err);
+      console.error('Failed to copy text: ', error);
     }
   }
 
@@ -214,10 +214,11 @@
       const fileExtension = setting.fileExtension || ".txt";
       const blob = new Blob([finalText], { type: "text/plain" });
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob); 
+      a.href = URL.createObjectURL(blob);
       a.download = `${formattedDate}_summary${fileExtension}`;
       document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
     });
   }
 
