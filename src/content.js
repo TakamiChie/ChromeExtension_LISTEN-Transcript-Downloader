@@ -20,13 +20,13 @@
       const summaryElement = document.querySelector("main div.mx-auto:nth-child(3)");
       const summary = summaryElement ? summaryElement.innerText.trim() : "概要なし";
       const title = document.querySelector("h1").textContent.trim();
-      const url =  location.href;
+      const url = location.href;
       const id = `check_${extractEpisodeId(url)}`;
       const dateElement = document.querySelector("main div.mx-auto:nth-child(1) div[x-data]:first-child").childNodes[0];
       let formattedEpisodeDate = dateElement ? dateToStr(new Date(dateElement.textContent.trim()), "-") : "日付不明";
       const podcastName = document.title.split("-").at(-2).trim();
       let content = {};
-      content[id] = { summary, title, url, date: formattedEpisodeDate, podcastName: podcastName};
+      content[id] = { summary, title, url, date: formattedEpisodeDate, podcastName: podcastName };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
 
       do_copy();
@@ -120,7 +120,7 @@
       const container = document.getElementById(DOWNLOAD_CONTAINER_ID);
       const hasData = Object.keys(loadStorageData()).length > 0;
       container.style.opacity = hasData ? 1 : 0;
-      container.style.visibility = hasData ? "visible" : "hidden" ;
+      container.style.visibility = hasData ? "visible" : "hidden";
     }
   }
 
@@ -224,76 +224,76 @@
 
   async function get_transcript_text() {
     return new Promise((resolve, reject) => {
-      chrome.storage.sync.get(['fileFormat', 'includeUrl', 'includeSummary', 'includePodcastName'], async(setting) => {
-      const storageData = loadStorageData();
-      let transcriptData = [];
-      const fileFormat = setting.fileFormat || ".txt";
-      const includeUrl = setting.includeUrl !== undefined ? setting.includeUrl : true;
-      const includeSummary = setting.includeSummary !== undefined ? setting.includeSummary : true;
-      const includePodcastName = setting.includePodcastName !== undefined ? setting.includePodcastName : true;
+      chrome.storage.sync.get(['fileFormat', 'includeUrl', 'includeSummary', 'includePodcastName'], async (setting) => {
+        const storageData = loadStorageData();
+        let transcriptData = [];
+        const fileFormat = setting.fileFormat || ".txt";
+        const includeUrl = setting.includeUrl !== undefined ? setting.includeUrl : true;
+        const includeSummary = setting.includeSummary !== undefined ? setting.includeSummary : true;
+        const includePodcastName = setting.includePodcastName !== undefined ? setting.includePodcastName : true;
 
-      const checkedIds = Object.keys(storageData);
-      if (checkedIds.length === 0) {
-        alert("選択された文字起こしがありません。");
-        reject("選択された文字起こしがありません。");
-      }
-
-      // ソート順序を取得
-      const sortOrder = localStorage.getItem(SORT_ORDER_KEY) || "desc"; // デフォルトは降順
-
-      // 日付順にソート
-      const sortedData = Object.entries(storageData).sort(([, a], [, b]) => {
-        if (a.date === "日付不明") return 1; // 日付不明は最後に配置
-        if (b.date === "日付不明") return -1; // 日付不明は最後に配置
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        if (sortOrder === "asc") {
-          return dateA - dateB; // 昇順
-        } else {
-          return dateB - dateA; // 降順
+        const checkedIds = Object.keys(storageData);
+        if (checkedIds.length === 0) {
+          alert("選択された文字起こしがありません。");
+          reject("選択された文字起こしがありません。");
         }
-      });
 
-      for (const [id, { summary, title, url, date, podcastName }] of sortedData) {
-        const transcriptUrl = `${url}/transcript${fileFormat}`;
+        // ソート順序を取得
+        const sortOrder = localStorage.getItem(SORT_ORDER_KEY) || "desc"; // デフォルトは降順
 
-        try {
-          const response = await fetch(transcriptUrl);
-          if (!response.ok) throw new Error("Failed to download: " + transcriptUrl);
-
-          const text = await response.text();
-
-          let transcriptEntry = `\n# ${date}`;
-          if (includePodcastName) {
-            transcriptEntry += `  ${podcastName}`;
+        // 日付順にソート
+        const sortedData = Object.entries(storageData).sort(([, a], [, b]) => {
+          if (a.date === "日付不明") return 1; // 日付不明は最後に配置
+          if (b.date === "日付不明") return -1; // 日付不明は最後に配置
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          if (sortOrder === "asc") {
+            return dateA - dateB; // 昇順
+          } else {
+            return dateB - dateA; // 降順
           }
-          transcriptEntry +=  ` ${title}\n`;
-          if (includeUrl) {
-            transcriptEntry += `${url}\n`;
+        });
+
+        for (const [id, { summary, title, url, date, podcastName }] of sortedData) {
+          const transcriptUrl = `${url}/transcript${fileFormat}`;
+
+          try {
+            const response = await fetch(transcriptUrl);
+            if (!response.ok) throw new Error("Failed to download: " + transcriptUrl);
+
+            const text = await response.text();
+
+            let transcriptEntry = `\n# ${date}`;
+            if (includePodcastName) {
+              transcriptEntry += `  ${podcastName}`;
+            }
+            transcriptEntry += ` ${title}\n`;
+            if (includeUrl) {
+              transcriptEntry += `${url}\n`;
+            }
+            if (includeSummary) {
+              transcriptEntry += `\n${summary}\n`;
+            }
+            transcriptEntry += `\n${text}`;
+            transcriptData.push(transcriptEntry);
+          } catch (error) {
+            console.error(error);
           }
-          if (includeSummary) {
-            transcriptEntry += `\n${summary}\n`;
-          }
-          transcriptEntry += `\n${text}`;
-          transcriptData.push(transcriptEntry);
-        } catch (error) {
-          console.error(error);
         }
-      }
 
-      if (transcriptData.length === 0) {
-        alert("選択された文字起こしがありません。");
-        reject("選択された文字起こしがありません。");
-      }
+        if (transcriptData.length === 0) {
+          alert("選択された文字起こしがありません。");
+          return;
+        }
 
-      const finalText = transcriptData.join("\n\n");
-      localStorage.removeItem(STORAGE_KEY); //ダウンロード完了後にローカルストレージをクリア
-      const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']");
-      checkboxes.forEach(checkbox => {
-        checkbox.checked = false
-      });
-      updateButtonVisibility();
-      resolve(finalText);
+        const finalText = transcriptData.join("\n\n");
+        localStorage.removeItem(STORAGE_KEY); //ダウンロード完了後にローカルストレージをクリア
+        const checkboxes = document.querySelectorAll("input[class^='transcript-checkbox']");
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = false
+        });
+        updateButtonVisibility();
+        resolve(finalText);
       });
     });
   }
@@ -318,10 +318,10 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    if(isMyPodcast(window.location.href.split("?")[0])) {
-      if(document.querySelector("article#transcript")){
+    if (isMyPodcast(window.location.href.split("?")[0])) {
+      if (document.querySelector("article#transcript")) {
         addCopyButton();
-      }else{
+      } else {
         addCheckBoxes();
       }
     }
