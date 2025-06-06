@@ -110,7 +110,7 @@
 
     // 配信日を取得
     let dateDiv = summaryElement?.previousElementSibling;
-if (!dateDiv) {
+    if (!dateDiv) {
       dateDiv = parent.parentElement.querySelector("div");
     }
     let rawDate = dateDiv ? dateDiv.childNodes[0].textContent.trim() : null;
@@ -317,6 +317,7 @@ if (!dateDiv) {
               check.type = "checkbox";
               check.id = `check_${episodeId}`;
               check.className = "transcript-checkbox";
+              check.style.marginLeft = "1ex";
               check.addEventListener("change", handleCheckboxChange);
               e.querySelector("div:nth-child(2) > h2").insertBefore(check, a);
               restoreCheckboxState(check);
