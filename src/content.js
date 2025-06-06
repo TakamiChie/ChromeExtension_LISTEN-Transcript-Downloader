@@ -110,6 +110,9 @@
 
     // 配信日を取得
     let dateDiv = summaryElement?.previousElementSibling;
+if (!dateDiv) {
+      dateDiv = parent.parentElement.querySelector("div");
+    }
     let rawDate = dateDiv ? dateDiv.childNodes[0].textContent.trim() : null;
     let formattedEpisodeDate = rawDate ? dateToStr(new Date(rawDate), "-") : "日付不明";
 
