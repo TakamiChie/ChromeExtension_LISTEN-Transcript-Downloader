@@ -9,13 +9,10 @@
   const extractEpisodeId = u => u.split`/p/`[1].split`/`.join``;
 
   function addCopyButton() {
-    let downloadContainer = document.createElement("div");
-    downloadContainer.id = DOWNLOAD_CONTAINER_ID;
-    document.querySelector("main").appendChild(downloadContainer);
+    createDownloadContainer(true);
 
-    // 文字起こしをクリップボードにコピーするボタンを追加
-    let copyButton = document.createElement("button");
-    copyButton.textContent = "文字起こしをコピー";
+    // 文字起こしをクリップボードにコピーするボタンの挙動を上書き
+    const copyButton = document.getElementById(COPYBUTTON_ID);
     copyButton.addEventListener("click", () => {
       // コンテントデータの取得
       const summaryElement = document.querySelector("main div.mx-auto:nth-child(3)");
@@ -32,8 +29,6 @@
 
       do_copy();
     });
-    copyButton.id = COPYBUTTON_ID;
-    downloadContainer.appendChild(copyButton);
 
     const container = document.getElementById(DOWNLOAD_CONTAINER_ID);
     container.style.opacity = 1;
@@ -320,26 +315,26 @@
     // 選択されたファイル形式を取得
     const fileFormat = localStorage.getItem(FILE_FORMAT_KEY) || ".txt";
     Array.from(targetNodes).forEach(e => {
-        const a = e.querySelector("div:nth-child(2) > h2 > a");
-        if (!a) return;
-        const transcriptUrl = a.href + `/transcript${fileFormat}`;
-        fetch(transcriptUrl, { method: "HEAD" })
-          .then(response => {
-            if (response.ok) {
-              const episodeId = extractEpisodeId(a.href);
-              let check = document.createElement("input");
-              check.type = "checkbox";
-              check.id = `check_${episodeId}`;
-              check.className = "transcript-checkbox";
-              check.style.marginLeft = "1ex";
-              check.addEventListener("change", handleCheckboxChange);
-              e.querySelector("div:nth-child(2) > h2").insertBefore(check, a);
-              restoreCheckboxState(check);
-            }
-          })
-          .catch(() => {
-            // transcript ページがない場合は何もせず
-          });
+      const a = e.querySelector("div:nth-child(2) > h2 > a");
+      if (!a) return;
+      const transcriptUrl = a.href + `/transcript${fileFormat}`;
+      fetch(transcriptUrl, { method: "HEAD" })
+        .then(response => {
+          if (response.ok) {
+            const episodeId = extractEpisodeId(a.href);
+            let check = document.createElement("input");
+            check.type = "checkbox";
+            check.id = `check_${episodeId}`;
+            check.className = "transcript-checkbox";
+            check.style.marginLeft = "1ex";
+            check.addEventListener("change", handleCheckboxChange);
+            e.querySelector("div:nth-child(2) > h2").insertBefore(check, a);
+            restoreCheckboxState(check);
+          }
+        })
+        .catch(() => {
+          // transcript ページがない場合は何もせず
+        });
     });
     // チェックボックス追加後、ボタンの表示状態を更新
     updateButtonVisibility();
@@ -350,7 +345,7 @@
    *
    * @returns {HTMLElement} ダウンロードボタンや各種ボタンを囲むコンテナ
   */
-  function createDownloadContainer() {
+  function createDownloadContainer(minimal = false) {
     // ダウンロードボタンや各種ボタンを囲むコンテナの作成
     let downloadContainer = document.createElement("div");
     downloadContainer.id = DOWNLOAD_CONTAINER_ID;
@@ -359,16 +354,11 @@
     // 文字起こしをクリップボードにコピーするボタンの追加
     let copyButton = document.createElement("button");
     copyButton.textContent = "文字起こしをコピー";
-    copyButton.addEventListener("click", () => do_copy());
+    if (!minimal) {
+      copyButton.addEventListener("click", () => do_copy());
+    }
     copyButton.id = COPYBUTTON_ID;
     downloadContainer.appendChild(copyButton);
-
-    // 文字起こしの一括ダウンロードボタンの追加
-    let button = document.createElement("button");
-    button.textContent = "文字起こしの一括ダウンロード";
-    button.addEventListener("click", () => do_download());
-    button.id = BUTTON_ID;
-    downloadContainer.appendChild(button);
 
     // ファイル形式選択セレクトボックスの追加
     let formatSelect = document.createElement("select");
@@ -388,31 +378,41 @@
     formatSelect.addEventListener("change", handleFileFormatChange);
     downloadContainer.appendChild(formatSelect);
 
-    // ソート順選択セレクトボックスの追加
-    let sortSelect = document.createElement("select");
-    sortSelect.id = "listendltool_sort_order";
-    let optionDesc = document.createElement("option");
-    optionDesc.value = "desc";
-    optionDesc.text = "降順";
-    let optionAsc = document.createElement("option");
-    optionAsc.value = "asc";
-    optionAsc.text = "昇順";
-    sortSelect.appendChild(optionDesc);
-    sortSelect.appendChild(optionAsc);
-    sortSelect.addEventListener("change", handleSortOrderChange);
-    downloadContainer.appendChild(sortSelect);
-
-    // ローカルストレージクリアボタンの追加
-    let clearStorageButton = document.createElement("button");
-    clearStorageButton.id = CLEAR_STORAGE_BUTTON_ID;
-    clearStorageButton.textContent = "選択をクリア";
-    clearStorageButton.addEventListener("click", clearLocalStorage);
-    downloadContainer.appendChild(clearStorageButton);
-
-    // ソート順序を復元
-    restoreSortOrder(sortSelect);
-    // ファイル形式を復元
     restoreFileFormat(formatSelect);
+
+    if (!minimal) {
+
+      // 文字起こしの一括ダウンロードボタンの追加
+      let button = document.createElement("button");
+      button.textContent = "文字起こしの一括ダウンロード";
+      button.addEventListener("click", () => do_download());
+      button.id = BUTTON_ID;
+      downloadContainer.insertBefore(button, formatSelect);
+
+      // ソート順選択セレクトボックスの追加
+      let sortSelect = document.createElement("select");
+      sortSelect.id = "listendltool_sort_order";
+      let optionDesc = document.createElement("option");
+      optionDesc.value = "desc";
+      optionDesc.text = "降順";
+      let optionAsc = document.createElement("option");
+      optionAsc.value = "asc";
+      optionAsc.text = "昇順";
+      sortSelect.appendChild(optionDesc);
+      sortSelect.appendChild(optionAsc);
+      sortSelect.addEventListener("change", handleSortOrderChange);
+      downloadContainer.appendChild(sortSelect);
+
+      // ローカルストレージクリアボタンの追加
+      let clearStorageButton = document.createElement("button");
+      clearStorageButton.id = CLEAR_STORAGE_BUTTON_ID;
+      clearStorageButton.textContent = "選択をクリア";
+      clearStorageButton.addEventListener("click", clearLocalStorage);
+      downloadContainer.appendChild(clearStorageButton);
+
+      // ソート順序を復元
+      restoreSortOrder(sortSelect);
+    }
 
     return downloadContainer;
   }
