@@ -4,7 +4,7 @@
   const STORAGE_KEY = "transcript_selection";
   const SORT_ORDER_KEY = "transcript_sort_order"; // ソート順序を保存するためのキー
   const DOWNLOAD_CONTAINER_ID = "listendltool_download_container"; // ダウンロードボタンとスピナーを囲むコンテナのID
-  const FILE_FORMAT_OVERRIDE_KEY = "listendltool_file_format"; // ダウンロード時に優先される形式
+  const FILE_FORMAT_KEY = "listendltool_file_format"; // ダウンロード形式を保存するキー
   const CLEAR_STORAGE_BUTTON_ID = "listendltool_clear_storage"; // ローカルストレージをクリアするボタンのID
   const extractEpisodeId = u => u.split`/p/`[1].split`/`.join``;
 
@@ -162,12 +162,12 @@
   // ファイル形式の変更をローカルストレージに保存
   function handleFileFormatChange(event) {
     const format = event.target.value;
-    localStorage.setItem(FILE_FORMAT_OVERRIDE_KEY, format);
+    localStorage.setItem(FILE_FORMAT_KEY, format);
   }
 
   // ファイル形式をローカルストレージから復元
   function restoreFileFormat(selectElement) {
-    const format = localStorage.getItem(FILE_FORMAT_OVERRIDE_KEY);
+    const format = localStorage.getItem(FILE_FORMAT_KEY);
     if (format) {
       selectElement.value = format;
     }
@@ -201,11 +201,10 @@
 
   async function get_transcript_text() {
     return new Promise((resolve, reject) => {
-      chrome.storage.sync.get(['fileFormat', 'includeUrl', 'includeSummary', 'includePodcastName'], async (setting) => {
+      chrome.storage.sync.get(['includeUrl', 'includeSummary', 'includePodcastName'], async (setting) => {
         const storageData = loadStorageData();
         let transcriptData = [];
-        const overrideFormat = localStorage.getItem(FILE_FORMAT_OVERRIDE_KEY);
-        const fileFormat = overrideFormat || setting.fileFormat || ".txt";
+        const fileFormat = localStorage.getItem(FILE_FORMAT_KEY) || ".txt";
         const includeUrl = setting.includeUrl !== undefined ? setting.includeUrl : true;
         const includeSummary = setting.includeSummary !== undefined ? setting.includeSummary : true;
         const includePodcastName = setting.includePodcastName !== undefined ? setting.includePodcastName : true;
@@ -318,11 +317,9 @@
       return;
     }
 
-    // chrome.storage.sync から fileFormat を取得してチェック
-    chrome.storage.sync.get(['fileFormat'], (setting) => {
-      const overrideFormat = localStorage.getItem(FILE_FORMAT_OVERRIDE_KEY);
-      const fileFormat = overrideFormat || setting.fileFormat || ".txt";
-      Array.from(targetNodes).forEach(e => {
+    // 選択されたファイル形式を取得
+    const fileFormat = localStorage.getItem(FILE_FORMAT_KEY) || ".txt";
+    Array.from(targetNodes).forEach(e => {
         const a = e.querySelector("div:nth-child(2) > h2 > a");
         if (!a) return;
         const transcriptUrl = a.href + `/transcript${fileFormat}`;
@@ -343,10 +340,9 @@
           .catch(() => {
             // transcript ページがない場合は何もせず
           });
-      });
-      // チェックボックス追加後、ボタンの表示状態を更新
-      updateButtonVisibility();
     });
+    // チェックボックス追加後、ボタンの表示状態を更新
+    updateButtonVisibility();
   }
 
   /**
