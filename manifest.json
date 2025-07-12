@@ -4,7 +4,7 @@
   "version": "1.1",
   "description": "LISTENでポッドキャストの文字起こしを一括ダウンロード",
   "permissions": ["downloads", "activeTab", "scripting", "storage"],
-  "host_permissions": ["https://listen.style/p/*"],
+  "host_permissions": ["https://listen.style/p/*", "https://listen.style/u/*"],
   "background": {
     "service_worker": "background.js"
   },
@@ -18,8 +18,8 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://listen.style/p/*"],
-      "include_globs": [ "https://listen.style/p/*"],
+      "matches": ["https://listen.style/p/*", "https://listen.style/u/*"],
+      "include_globs": [ "https://listen.style/p/*", "https://listen.style/u/*"],
       "js": ["src/content.js"],
       "run_at": "document_start",
       "css": ["src/styles.css"]

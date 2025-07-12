@@ -40,48 +40,7 @@
   }
 
   function addCheckBoxes() {
-    // ダウンロードボタンとスピナーを囲むコンテナを作成
-    let downloadContainer = document.createElement("div");
-    downloadContainer.id = DOWNLOAD_CONTAINER_ID;
-    document.querySelector("main").appendChild(downloadContainer);
-
-    // 文字起こしをクリップボードにコピーするボタンを追加
-    let copyButton = document.createElement("button");
-    copyButton.textContent = "文字起こしをコピー";
-    copyButton.addEventListener("click", () => do_copy());
-    copyButton.id = COPYBUTTON_ID;
-    downloadContainer.appendChild(copyButton);
-
-    // 自分が管理しているポッドキャストなら、チェックボックスと一括ダウンロードボタンを作成
-    let button = document.createElement("button");
-    button.textContent = "文字起こしの一括ダウンロード";
-    button.addEventListener("click", () => do_download());
-    button.id = BUTTON_ID;
-    downloadContainer.appendChild(button);
-
-    // スピナーの追加
-    let sortSelect = document.createElement("select");
-    sortSelect.id = "listendltool_sort_order";
-    let optionDesc = document.createElement("option");
-    optionDesc.value = "desc";
-    optionDesc.text = "降順";
-    let optionAsc = document.createElement("option");
-    optionAsc.value = "asc";
-    optionAsc.text = "昇順";
-    sortSelect.appendChild(optionDesc);
-    sortSelect.appendChild(optionAsc);
-    sortSelect.addEventListener("change", handleSortOrderChange);
-    downloadContainer.appendChild(sortSelect);
-
-    // ローカルストレージをクリアするボタンを追加
-    let clearStorageButton = document.createElement("button");
-    clearStorageButton.id = CLEAR_STORAGE_BUTTON_ID;
-    clearStorageButton.textContent = "選択をクリア";
-    clearStorageButton.addEventListener("click", clearLocalStorage);
-    downloadContainer.appendChild(clearStorageButton);
-
-    // ソート順序を復元
-    restoreSortOrder(sortSelect);
+    createDownloadContainer();
 
     // 検索結果ページには.playable-episodeがない＝見つからなかった場合.items-startを探す
     let targetNodes = document.querySelectorAll(".playable-episode");
@@ -151,6 +110,9 @@
 
     // 配信日を取得
     let dateDiv = summaryElement?.previousElementSibling;
+    if (!dateDiv) {
+      dateDiv = parent.parentElement.querySelector("div");
+    }
     let rawDate = dateDiv ? dateDiv.childNodes[0].textContent.trim() : null;
     let formattedEpisodeDate = rawDate ? dateToStr(new Date(rawDate), "-") : "日付不明";
 
@@ -318,7 +280,9 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    if (isMyPodcast(window.location.href.split("?")[0])) {
+    if (window.location.href.startsWith("https://listen.style/u/")) {
+      addCheckBoxesForListenUser();
+    } else if (isMyPodcast(window.location.href.split("?")[0])) {
       if (document.querySelector("article#transcript")) {
         addCopyButton();
       } else {
@@ -326,4 +290,97 @@
       }
     }
   });
+
+  // https://listen.style/u/ 用のチェックボックス追加処理
+  function addCheckBoxesForListenUser() {
+    createDownloadContainer();
+
+    // 対象ノードを取得（https://listen.style/u/ 用）
+    let targetNodes = document.querySelectorAll("main > div > div:nth-child(2) .items-start.playable-episode");
+    if (targetNodes.length === 0) {
+      console.log("再生可能なエピソードが見つかりませんでした。");
+      return;
+    }
+
+    // chrome.storage.sync から fileFormat を取得してチェック
+    chrome.storage.sync.get(['fileFormat'], (setting) => {
+      const fileFormat = setting.fileFormat || ".txt";
+      Array.from(targetNodes).forEach(e => {
+        const a = e.querySelector("div:nth-child(2) > h2 > a");
+        if (!a) return;
+        const transcriptUrl = a.href + `/transcript${fileFormat}`;
+        fetch(transcriptUrl, { method: "HEAD" })
+          .then(response => {
+            if (response.ok) {
+              const episodeId = extractEpisodeId(a.href);
+              let check = document.createElement("input");
+              check.type = "checkbox";
+              check.id = `check_${episodeId}`;
+              check.className = "transcript-checkbox";
+              check.style.marginLeft = "1ex";
+              check.addEventListener("change", handleCheckboxChange);
+              e.querySelector("div:nth-child(2) > h2").insertBefore(check, a);
+              restoreCheckboxState(check);
+            }
+          })
+          .catch(() => {
+            // transcript ページがない場合は何もせず
+          });
+      });
+      // チェックボックス追加後、ボタンの表示状態を更新
+      updateButtonVisibility();
+    });
+  }
+
+  /**
+   * ダウンロードバーを作成してそれを返す
+   *
+   * @returns {HTMLElement} ダウンロードボタンや各種ボタンを囲むコンテナ
+  */
+  function createDownloadContainer() {
+    // ダウンロードボタンや各種ボタンを囲むコンテナの作成
+    let downloadContainer = document.createElement("div");
+    downloadContainer.id = DOWNLOAD_CONTAINER_ID;
+    document.querySelector("main").appendChild(downloadContainer);
+
+    // 文字起こしをクリップボードにコピーするボタンの追加
+    let copyButton = document.createElement("button");
+    copyButton.textContent = "文字起こしをコピー";
+    copyButton.addEventListener("click", () => do_copy());
+    copyButton.id = COPYBUTTON_ID;
+    downloadContainer.appendChild(copyButton);
+
+    // 文字起こしの一括ダウンロードボタンの追加
+    let button = document.createElement("button");
+    button.textContent = "文字起こしの一括ダウンロード";
+    button.addEventListener("click", () => do_download());
+    button.id = BUTTON_ID;
+    downloadContainer.appendChild(button);
+
+    // ソート順選択セレクトボックスの追加
+    let sortSelect = document.createElement("select");
+    sortSelect.id = "listendltool_sort_order";
+    let optionDesc = document.createElement("option");
+    optionDesc.value = "desc";
+    optionDesc.text = "降順";
+    let optionAsc = document.createElement("option");
+    optionAsc.value = "asc";
+    optionAsc.text = "昇順";
+    sortSelect.appendChild(optionDesc);
+    sortSelect.appendChild(optionAsc);
+    sortSelect.addEventListener("change", handleSortOrderChange);
+    downloadContainer.appendChild(sortSelect);
+
+    // ローカルストレージクリアボタンの追加
+    let clearStorageButton = document.createElement("button");
+    clearStorageButton.id = CLEAR_STORAGE_BUTTON_ID;
+    clearStorageButton.textContent = "選択をクリア";
+    clearStorageButton.addEventListener("click", clearLocalStorage);
+    downloadContainer.appendChild(clearStorageButton);
+
+    // ソート順序を復元
+    restoreSortOrder(sortSelect);
+
+    return downloadContainer;
+  }
 })();
