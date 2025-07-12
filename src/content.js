@@ -315,26 +315,26 @@
     // 選択されたファイル形式を取得
     const fileFormat = localStorage.getItem(FILE_FORMAT_KEY) || ".txt";
     Array.from(targetNodes).forEach(e => {
-        const a = e.querySelector("div:nth-child(2) > h2 > a");
-        if (!a) return;
-        const transcriptUrl = a.href + `/transcript${fileFormat}`;
-        fetch(transcriptUrl, { method: "HEAD" })
-          .then(response => {
-            if (response.ok) {
-              const episodeId = extractEpisodeId(a.href);
-              let check = document.createElement("input");
-              check.type = "checkbox";
-              check.id = `check_${episodeId}`;
-              check.className = "transcript-checkbox";
-              check.style.marginLeft = "1ex";
-              check.addEventListener("change", handleCheckboxChange);
-              e.querySelector("div:nth-child(2) > h2").insertBefore(check, a);
-              restoreCheckboxState(check);
-            }
-          })
-          .catch(() => {
-            // transcript ページがない場合は何もせず
-          });
+      const a = e.querySelector("div:nth-child(2) > h2 > a");
+      if (!a) return;
+      const transcriptUrl = a.href + `/transcript${fileFormat}`;
+      fetch(transcriptUrl, { method: "HEAD" })
+        .then(response => {
+          if (response.ok) {
+            const episodeId = extractEpisodeId(a.href);
+            let check = document.createElement("input");
+            check.type = "checkbox";
+            check.id = `check_${episodeId}`;
+            check.className = "transcript-checkbox";
+            check.style.marginLeft = "1ex";
+            check.addEventListener("change", handleCheckboxChange);
+            e.querySelector("div:nth-child(2) > h2").insertBefore(check, a);
+            restoreCheckboxState(check);
+          }
+        })
+        .catch(() => {
+          // transcript ページがない場合は何もせず
+        });
     });
     // チェックボックス追加後、ボタンの表示状態を更新
     updateButtonVisibility();
@@ -378,43 +378,41 @@
     formatSelect.addEventListener("change", handleFileFormatChange);
     downloadContainer.appendChild(formatSelect);
 
-    if (minimal) {
-      restoreFileFormat(formatSelect);
-      return downloadContainer;
-    }
-
-    // 文字起こしの一括ダウンロードボタンの追加
-    let button = document.createElement("button");
-    button.textContent = "文字起こしの一括ダウンロード";
-    button.addEventListener("click", () => do_download());
-    button.id = BUTTON_ID;
-    downloadContainer.appendChild(button);
-
-    // ソート順選択セレクトボックスの追加
-    let sortSelect = document.createElement("select");
-    sortSelect.id = "listendltool_sort_order";
-    let optionDesc = document.createElement("option");
-    optionDesc.value = "desc";
-    optionDesc.text = "降順";
-    let optionAsc = document.createElement("option");
-    optionAsc.value = "asc";
-    optionAsc.text = "昇順";
-    sortSelect.appendChild(optionDesc);
-    sortSelect.appendChild(optionAsc);
-    sortSelect.addEventListener("change", handleSortOrderChange);
-    downloadContainer.appendChild(sortSelect);
-
-    // ローカルストレージクリアボタンの追加
-    let clearStorageButton = document.createElement("button");
-    clearStorageButton.id = CLEAR_STORAGE_BUTTON_ID;
-    clearStorageButton.textContent = "選択をクリア";
-    clearStorageButton.addEventListener("click", clearLocalStorage);
-    downloadContainer.appendChild(clearStorageButton);
-
-    // ソート順序を復元
-    restoreSortOrder(sortSelect);
-    // ファイル形式を復元
     restoreFileFormat(formatSelect);
+
+    if (!minimal) {
+
+      // 文字起こしの一括ダウンロードボタンの追加
+      let button = document.createElement("button");
+      button.textContent = "文字起こしの一括ダウンロード";
+      button.addEventListener("click", () => do_download());
+      button.id = BUTTON_ID;
+      downloadContainer.insertBefore(button, formatSelect);
+
+      // ソート順選択セレクトボックスの追加
+      let sortSelect = document.createElement("select");
+      sortSelect.id = "listendltool_sort_order";
+      let optionDesc = document.createElement("option");
+      optionDesc.value = "desc";
+      optionDesc.text = "降順";
+      let optionAsc = document.createElement("option");
+      optionAsc.value = "asc";
+      optionAsc.text = "昇順";
+      sortSelect.appendChild(optionDesc);
+      sortSelect.appendChild(optionAsc);
+      sortSelect.addEventListener("change", handleSortOrderChange);
+      downloadContainer.appendChild(sortSelect);
+
+      // ローカルストレージクリアボタンの追加
+      let clearStorageButton = document.createElement("button");
+      clearStorageButton.id = CLEAR_STORAGE_BUTTON_ID;
+      clearStorageButton.textContent = "選択をクリア";
+      clearStorageButton.addEventListener("click", clearLocalStorage);
+      downloadContainer.appendChild(clearStorageButton);
+
+      // ソート順序を復元
+      restoreSortOrder(sortSelect);
+    }
 
     return downloadContainer;
   }
