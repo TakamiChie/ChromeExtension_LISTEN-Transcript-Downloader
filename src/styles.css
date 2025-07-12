@@ -21,25 +21,29 @@
   right: 10px;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px; /* ボタンとスピナーの間隔を調整 */
-  z-index: 10; /* ダイアログより前面に出ないよう調整 */
+  gap: 10px;
+  /* ボタンとスピナーの間隔を調整 */
+  z-index: 10;
+  /* ダイアログより前面に出ないよう調整 */
   opacity: 0;
   visibility: hidden;
   transition: all 0.5s;
 }
 
-/* スピナーのスタイル（必要に応じて調整） */
-#listendltool_sort_order {
-    padding: 5px;
-    width: 5em;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: #fff;
-    color: #333;
-    appearance: none; /* デフォルトのスタイルを削除 */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6'%3E%3Cpath d='M1 1l3 4 3-4z' fill='%23333'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 5px center;
+/* スピナーのスタイル */
+#listendltool_sort_order,
+#listendltool_file_format {
+  padding: 5px;
+  width: 5em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #333;
+  appearance: none;
+  /* デフォルトのスタイルを削除 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6'%3E%3Cpath d='M1 1l3 4 3-4z' fill='%23333'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 5px center;
 }
