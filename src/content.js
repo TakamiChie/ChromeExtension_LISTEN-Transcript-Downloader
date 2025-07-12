@@ -9,13 +9,10 @@
   const extractEpisodeId = u => u.split`/p/`[1].split`/`.join``;
 
   function addCopyButton() {
-    let downloadContainer = document.createElement("div");
-    downloadContainer.id = DOWNLOAD_CONTAINER_ID;
-    document.querySelector("main").appendChild(downloadContainer);
+    createDownloadContainer(true);
 
-    // 文字起こしをクリップボードにコピーするボタンを追加
-    let copyButton = document.createElement("button");
-    copyButton.textContent = "文字起こしをコピー";
+    // 文字起こしをクリップボードにコピーするボタンの挙動を上書き
+    const copyButton = document.getElementById(COPYBUTTON_ID);
     copyButton.addEventListener("click", () => {
       // コンテントデータの取得
       const summaryElement = document.querySelector("main div.mx-auto:nth-child(3)");
@@ -32,8 +29,6 @@
 
       do_copy();
     });
-    copyButton.id = COPYBUTTON_ID;
-    downloadContainer.appendChild(copyButton);
 
     const container = document.getElementById(DOWNLOAD_CONTAINER_ID);
     container.style.opacity = 1;
@@ -350,7 +345,7 @@
    *
    * @returns {HTMLElement} ダウンロードボタンや各種ボタンを囲むコンテナ
   */
-  function createDownloadContainer() {
+  function createDownloadContainer(minimal = false) {
     // ダウンロードボタンや各種ボタンを囲むコンテナの作成
     let downloadContainer = document.createElement("div");
     downloadContainer.id = DOWNLOAD_CONTAINER_ID;
@@ -359,16 +354,11 @@
     // 文字起こしをクリップボードにコピーするボタンの追加
     let copyButton = document.createElement("button");
     copyButton.textContent = "文字起こしをコピー";
-    copyButton.addEventListener("click", () => do_copy());
+    if (!minimal) {
+      copyButton.addEventListener("click", () => do_copy());
+    }
     copyButton.id = COPYBUTTON_ID;
     downloadContainer.appendChild(copyButton);
-
-    // 文字起こしの一括ダウンロードボタンの追加
-    let button = document.createElement("button");
-    button.textContent = "文字起こしの一括ダウンロード";
-    button.addEventListener("click", () => do_download());
-    button.id = BUTTON_ID;
-    downloadContainer.appendChild(button);
 
     // ファイル形式選択セレクトボックスの追加
     let formatSelect = document.createElement("select");
@@ -387,6 +377,18 @@
     formatSelect.appendChild(optionSrt);
     formatSelect.addEventListener("change", handleFileFormatChange);
     downloadContainer.appendChild(formatSelect);
+
+    if (minimal) {
+      restoreFileFormat(formatSelect);
+      return downloadContainer;
+    }
+
+    // 文字起こしの一括ダウンロードボタンの追加
+    let button = document.createElement("button");
+    button.textContent = "文字起こしの一括ダウンロード";
+    button.addEventListener("click", () => do_download());
+    button.id = BUTTON_ID;
+    downloadContainer.appendChild(button);
 
     // ソート順選択セレクトボックスの追加
     let sortSelect = document.createElement("select");
