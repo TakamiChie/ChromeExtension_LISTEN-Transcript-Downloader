@@ -4,6 +4,7 @@
   const STORAGE_KEY = "transcript_selection";
   const SORT_ORDER_KEY = "transcript_sort_order"; // ソート順序を保存するためのキー
   const DOWNLOAD_CONTAINER_ID = "listendltool_download_container"; // ダウンロードボタンとスピナーを囲むコンテナのID
+  const FILE_FORMAT_OVERRIDE_KEY = "listendltool_file_format"; // ダウンロード時に優先される形式
   const CLEAR_STORAGE_BUTTON_ID = "listendltool_clear_storage"; // ローカルストレージをクリアするボタンのID
   const extractEpisodeId = u => u.split`/p/`[1].split`/`.join``;
 
@@ -158,6 +159,20 @@
     }
   }
 
+  // ファイル形式の変更をローカルストレージに保存
+  function handleFileFormatChange(event) {
+    const format = event.target.value;
+    localStorage.setItem(FILE_FORMAT_OVERRIDE_KEY, format);
+  }
+
+  // ファイル形式をローカルストレージから復元
+  function restoreFileFormat(selectElement) {
+    const format = localStorage.getItem(FILE_FORMAT_OVERRIDE_KEY);
+    if (format) {
+      selectElement.value = format;
+    }
+  }
+
   async function do_copy() {
     const finalText = await get_transcript_text();
     try {
@@ -189,7 +204,8 @@
       chrome.storage.sync.get(['fileFormat', 'includeUrl', 'includeSummary', 'includePodcastName'], async (setting) => {
         const storageData = loadStorageData();
         let transcriptData = [];
-        const fileFormat = setting.fileFormat || ".txt";
+        const overrideFormat = localStorage.getItem(FILE_FORMAT_OVERRIDE_KEY);
+        const fileFormat = overrideFormat || setting.fileFormat || ".txt";
         const includeUrl = setting.includeUrl !== undefined ? setting.includeUrl : true;
         const includeSummary = setting.includeSummary !== undefined ? setting.includeSummary : true;
         const includePodcastName = setting.includePodcastName !== undefined ? setting.includePodcastName : true;
@@ -304,7 +320,8 @@
 
     // chrome.storage.sync から fileFormat を取得してチェック
     chrome.storage.sync.get(['fileFormat'], (setting) => {
-      const fileFormat = setting.fileFormat || ".txt";
+      const overrideFormat = localStorage.getItem(FILE_FORMAT_OVERRIDE_KEY);
+      const fileFormat = overrideFormat || setting.fileFormat || ".txt";
       Array.from(targetNodes).forEach(e => {
         const a = e.querySelector("div:nth-child(2) > h2 > a");
         if (!a) return;
@@ -357,6 +374,24 @@
     button.id = BUTTON_ID;
     downloadContainer.appendChild(button);
 
+    // ファイル形式選択セレクトボックスの追加
+    let formatSelect = document.createElement("select");
+    formatSelect.id = "listendltool_file_format";
+    let optionTxt = document.createElement("option");
+    optionTxt.value = ".txt";
+    optionTxt.text = ".txt";
+    let optionVtt = document.createElement("option");
+    optionVtt.value = ".vtt";
+    optionVtt.text = ".vtt";
+    let optionSrt = document.createElement("option");
+    optionSrt.value = ".srt";
+    optionSrt.text = ".srt";
+    formatSelect.appendChild(optionTxt);
+    formatSelect.appendChild(optionVtt);
+    formatSelect.appendChild(optionSrt);
+    formatSelect.addEventListener("change", handleFileFormatChange);
+    downloadContainer.appendChild(formatSelect);
+
     // ソート順選択セレクトボックスの追加
     let sortSelect = document.createElement("select");
     sortSelect.id = "listendltool_sort_order";
@@ -380,6 +415,8 @@
 
     // ソート順序を復元
     restoreSortOrder(sortSelect);
+    // ファイル形式を復元
+    restoreFileFormat(formatSelect);
 
     return downloadContainer;
   }
