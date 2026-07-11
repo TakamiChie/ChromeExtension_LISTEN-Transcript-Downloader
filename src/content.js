@@ -212,12 +212,12 @@
     });
   }
 
-  async function get_transcript_text() {
+  async function get_transcript_text(forcedFormat = undefined) {
     return new Promise((resolve, reject) => {
       chrome.storage.sync.get(['includeUrl', 'includeSummary', 'includePodcastName'], async (setting) => {
         const storageData = loadStorageData();
         let transcriptData = [];
-        const fileFormat = localStorage.getItem(FILE_FORMAT_KEY) || ".txt";
+        const fileFormat = forcedFormat !== undefined ? forcedFormat : (localStorage.getItem(FILE_FORMAT_KEY) || ".txt");
         const includeUrl = setting.includeUrl !== undefined ? setting.includeUrl : true;
         const includeSummary = setting.includeSummary !== undefined ? setting.includeSummary : true;
         const includePodcastName = setting.includePodcastName !== undefined ? setting.includePodcastName : true;
