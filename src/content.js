@@ -142,6 +142,7 @@
   function handleSortOrderChange(event) {
     const sortOrder = event.target.value;
     localStorage.setItem(SORT_ORDER_KEY, sortOrder);
+    event.target.blur();
   }
 
   // ソート順序をローカルストレージから復元
@@ -158,6 +159,7 @@
   function handleFileFormatChange(event) {
     const format = event.target.value;
     localStorage.setItem(FILE_FORMAT_KEY, format);
+    event.target.blur();
   }
 
   // ファイル形式をローカルストレージから復元
@@ -166,6 +168,22 @@
     if (format) {
       selectElement.value = format;
     }
+  }
+
+  // セレクトボックスフォーカス時にコンテナにクラスを付与/削除する関数
+  function attachSelectFocusListeners(selectElement) {
+    selectElement.addEventListener("focus", () => {
+      const container = document.getElementById(DOWNLOAD_CONTAINER_ID);
+      if (container) {
+        container.classList.add("listendltool_open");
+      }
+    });
+    selectElement.addEventListener("blur", () => {
+      const container = document.getElementById(DOWNLOAD_CONTAINER_ID);
+      if (container) {
+        container.classList.remove("listendltool_open");
+      }
+    });
   }
 
   async function do_copy() {
@@ -397,6 +415,7 @@
     popup.appendChild(formatRow);
 
     restoreFileFormat(formatSelect);
+    attachSelectFocusListeners(formatSelect);
 
     if (!minimal) {
       // 文字起こしの一括ダウンロードボタンの追加
@@ -436,6 +455,7 @@
 
       // ソート順序を復元
       restoreSortOrder(sortSelect);
+      attachSelectFocusListeners(sortSelect);
     }
 
     return downloadContainer;

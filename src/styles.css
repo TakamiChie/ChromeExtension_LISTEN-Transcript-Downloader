@@ -26,7 +26,8 @@
   z-index: -1;
   pointer-events: none;
 }
-#listendltool_download_container:hover::before {
+#listendltool_download_container:hover::before,
+#listendltool_download_container.listendltool_open::before {
   pointer-events: auto;
 }
 
@@ -64,8 +65,9 @@
   transition: transform 0.2s ease;
 }
 
-/* Rotate arrow on container hover */
-#listendltool_download_container:hover .listendltool_arrow {
+/* Rotate arrow on container hover or when active open */
+#listendltool_download_container:hover .listendltool_arrow,
+#listendltool_download_container.listendltool_open .listendltool_arrow {
   transform: rotate(180deg);
 }
 
@@ -103,8 +105,9 @@
   z-index: -1;
 }
 
-/* Show popup on container hover */
-#listendltool_download_container:hover #listendltool_popup {
+/* Show popup on container hover or when active open */
+#listendltool_download_container:hover #listendltool_popup,
+#listendltool_download_container.listendltool_open #listendltool_popup {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
