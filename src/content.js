@@ -351,6 +351,17 @@
     downloadContainer.id = DOWNLOAD_CONTAINER_ID;
     document.querySelector("main").appendChild(downloadContainer);
 
+    // トリガーボタンの追加
+    let trigger = document.createElement("button");
+    trigger.id = "listendltool_trigger";
+    trigger.innerHTML = `文字起こしメニュー <span class="listendltool_arrow">▼</span>`;
+    downloadContainer.appendChild(trigger);
+
+    // ポップアップメニューの作成
+    let popup = document.createElement("div");
+    popup.id = "listendltool_popup";
+    downloadContainer.appendChild(popup);
+
     // 文字起こしをクリップボードにコピーするボタンの追加
     let copyButton = document.createElement("button");
     copyButton.textContent = "文字起こしをコピー";
@@ -358,9 +369,14 @@
       copyButton.addEventListener("click", () => do_copy());
     }
     copyButton.id = COPYBUTTON_ID;
-    downloadContainer.appendChild(copyButton);
+    popup.appendChild(copyButton);
 
     // ファイル形式選択セレクトボックスの追加
+    let formatRow = document.createElement("div");
+    formatRow.className = "listendltool_menu_row";
+    let formatLabel = document.createElement("label");
+    formatLabel.textContent = "ファイル形式";
+    formatLabel.setAttribute("for", "listendltool_file_format");
     let formatSelect = document.createElement("select");
     formatSelect.id = "listendltool_file_format";
     let optionTxt = document.createElement("option");
@@ -376,20 +392,26 @@
     formatSelect.appendChild(optionVtt);
     formatSelect.appendChild(optionSrt);
     formatSelect.addEventListener("change", handleFileFormatChange);
-    downloadContainer.appendChild(formatSelect);
+    formatRow.appendChild(formatLabel);
+    formatRow.appendChild(formatSelect);
+    popup.appendChild(formatRow);
 
     restoreFileFormat(formatSelect);
 
     if (!minimal) {
-
       // 文字起こしの一括ダウンロードボタンの追加
       let button = document.createElement("button");
       button.textContent = "文字起こしの一括ダウンロード";
       button.addEventListener("click", () => do_download());
       button.id = BUTTON_ID;
-      downloadContainer.insertBefore(button, formatSelect);
+      popup.insertBefore(button, formatRow);
 
       // ソート順選択セレクトボックスの追加
+      let sortRow = document.createElement("div");
+      sortRow.className = "listendltool_menu_row";
+      let sortLabel = document.createElement("label");
+      sortLabel.textContent = "ソート順";
+      sortLabel.setAttribute("for", "listendltool_sort_order");
       let sortSelect = document.createElement("select");
       sortSelect.id = "listendltool_sort_order";
       let optionDesc = document.createElement("option");
@@ -401,14 +423,16 @@
       sortSelect.appendChild(optionDesc);
       sortSelect.appendChild(optionAsc);
       sortSelect.addEventListener("change", handleSortOrderChange);
-      downloadContainer.appendChild(sortSelect);
+      sortRow.appendChild(sortLabel);
+      sortRow.appendChild(sortSelect);
+      popup.appendChild(sortRow);
 
       // ローカルストレージクリアボタンの追加
       let clearStorageButton = document.createElement("button");
       clearStorageButton.id = CLEAR_STORAGE_BUTTON_ID;
       clearStorageButton.textContent = "選択をクリア";
       clearStorageButton.addEventListener("click", clearLocalStorage);
-      downloadContainer.appendChild(clearStorageButton);
+      popup.appendChild(clearStorageButton);
 
       // ソート順序を復元
       restoreSortOrder(sortSelect);
