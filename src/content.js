@@ -266,21 +266,23 @@
       }
 
       // 話者ごとにVTTファイルを作成してダウンロード
-      speakers.forEach(speaker => {
+      speakers.forEach(async speaker => {
         const speakerVtt = [header, ...speakerCues[speaker]].join("\n\n") + "\n";
         const blob = new Blob([speakerVtt], { type: "text/vtt" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        
+
         const safeTitle = title.replace(/[\\/:*?"<>|]/g, "_");
         const safeSpeaker = speaker.replace(/[\\/:*?"<>|]/g, "_");
         const today = dateToStr(new Date());
-        
-        a.download = `${today}_${safeTitle}_${safeSpeaker}.vtt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
+        await chrome.storage.sync.get(['fileExtension'], (setting) => {
+          const fileExtension = setting.fileExtension || ".txt";
+          a.download = `${today}_${safeTitle}_${safeSpeaker}${fileExtension}`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(a.href);
+        });
       });
     } catch (error) {
       console.error("話者別ダウンロードでエラーが発生しました:", error);
