@@ -11,10 +11,8 @@
   function addCopyButton() {
     createDownloadContainer(true);
 
-    // 文字起こしをクリップボードにコピーするボタンの挙動を上書き
-    const copyButton = document.getElementById(COPYBUTTON_ID);
-    copyButton.addEventListener("click", () => {
-      // コンテントデータの取得
+    // 個別ページ用のエピソード情報を抽出し、localStorageに保存する共通処理
+    function saveCurrentEpisodeToStorage() {
       const summaryElement = document.querySelector("main div.mx-auto:nth-child(3)");
       const summary = summaryElement ? summaryElement.innerText.trim() : "概要なし";
       const title = document.querySelector("h1").textContent.trim();
@@ -26,9 +24,24 @@
       let content = {};
       content[id] = { summary, title, url, date: formattedEpisodeDate, podcastName: podcastName };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
+      return { title };
+    }
 
+    // 文字起こしをクリップボードにコピーするボタンの挙動を上書き
+    const copyButton = document.getElementById(COPYBUTTON_ID);
+    copyButton.addEventListener("click", () => {
+      saveCurrentEpisodeToStorage();
       do_copy();
     });
+
+    // 話者別ダウンロードボタンのイベントリスナーを設定
+    const speakerDownloadButton = document.getElementById("listendltool_speaker_download");
+    if (speakerDownloadButton) {
+      speakerDownloadButton.addEventListener("click", async () => {
+        const { title } = saveCurrentEpisodeToStorage();
+        await do_speaker_download(title);
+      });
+    }
 
     const container = document.getElementById(DOWNLOAD_CONTAINER_ID);
     container.style.opacity = 1;
@@ -212,6 +225,68 @@
     });
   }
 
+  async function do_speaker_download(title) {
+    try {
+      const rawText = await get_transcript_text(".vtt");
+      if (!rawText) return;
+
+      const vttIndex = rawText.indexOf("WEBVTT");
+      if (vttIndex === -1) {
+        alert("VTT形式の文字起こしデータが見つかりませんでした。");
+        return;
+      }
+      const vttText = rawText.substring(vttIndex);
+
+      // 改行で分割して、各ブロック（Cue）を処理する
+      const blocks = vttText.trim().split(/\r?\n\r?\n/);
+      if (blocks.length === 0) return;
+
+      const header = blocks[0];
+      const cues = blocks.slice(1);
+
+      // 各Cueから話者名を抽出し、話者ごとのCueリストに分ける
+      const speakerCues = {}; // 話者名 -> Cue配列
+      const speakerRegex = /<v\s+([^>]+)>/;
+
+      cues.forEach(cue => {
+        const match = cue.match(speakerRegex);
+        if (match) {
+          const speakerName = match[1].trim();
+          if (!speakerCues[speakerName]) {
+            speakerCues[speakerName] = [];
+          }
+          speakerCues[speakerName].push(cue);
+        }
+      });
+
+      const speakers = Object.keys(speakerCues);
+      if (speakers.length === 0) {
+        alert("話者情報が見つかりませんでした。");
+        return;
+      }
+
+      // 話者ごとにVTTファイルを作成してダウンロード
+      speakers.forEach(speaker => {
+        const speakerVtt = [header, ...speakerCues[speaker]].join("\n\n") + "\n";
+        const blob = new Blob([speakerVtt], { type: "text/vtt" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        
+        const safeTitle = title.replace(/[\\/:*?"<>|]/g, "_");
+        const safeSpeaker = speaker.replace(/[\\/:*?"<>|]/g, "_");
+        const today = dateToStr(new Date());
+        
+        a.download = `${today}_${safeTitle}_${safeSpeaker}.vtt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+      });
+    } catch (error) {
+      console.error("話者別ダウンロードでエラーが発生しました:", error);
+    }
+  }
+
   async function get_transcript_text(forcedFormat = undefined) {
     return new Promise((resolve, reject) => {
       chrome.storage.sync.get(['includeUrl', 'includeSummary', 'includePodcastName'], async (setting) => {
@@ -388,6 +463,14 @@
     }
     copyButton.id = COPYBUTTON_ID;
     popup.appendChild(copyButton);
+
+    // 話者別ダウンロードボタンの追加（個別ページ＝minimalがtrueのときのみ）
+    if (minimal) {
+      let speakerDownloadButton = document.createElement("button");
+      speakerDownloadButton.textContent = "話者別ダウンロード";
+      speakerDownloadButton.id = "listendltool_speaker_download";
+      popup.appendChild(speakerDownloadButton);
+    }
 
     // ファイル形式選択セレクトボックスの追加
     let formatRow = document.createElement("div");
