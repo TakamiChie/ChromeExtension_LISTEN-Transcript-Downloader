@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,14 @@
   <link rel="stylesheet" href="popup.css">
   <script src="popup.js" defer></script>
 </head>
+
 <body>
   <h1>LISTEN Downloader | 設定</h1>
 
   <div class="setting-row">
     <label for="file-extension">ダウンロードファイルの拡張子</label>
     <select id="file-extension">
+      <option value="auto">自動</option>
       <option value=".txt">.txt</option>
       <option value=".md">.md</option>
     </select>
@@ -34,4 +37,5 @@
     <label for="include-podcast-name">ポッドキャスト名を含める</label>
   </div>
 </body>
+
 </html>

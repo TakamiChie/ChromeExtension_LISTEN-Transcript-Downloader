@@ -214,7 +214,8 @@
     await chrome.storage.sync.get(['fileExtension'], (setting) => {
       const today = new Date();
       const formattedDate = dateToStr(today);
-      const fileExtension = setting.fileExtension || ".txt";
+      const fileExtension = setting.fileExtension == "auto" ?
+        ".txt" : setting.fileExtension || ".txt";
       const blob = new Blob([finalText], { type: "text/plain" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -276,7 +277,9 @@
         const safeSpeaker = speaker.replace(/[\\/:*?"<>|]/g, "_");
         const today = dateToStr(new Date());
         await chrome.storage.sync.get(['fileExtension'], (setting) => {
-          const fileExtension = setting.fileExtension || ".txt";
+          const fileExtension = setting.fileExtension == "auto" ?
+            ".vtt" : setting.fileExtension || ".txt";
+
           a.download = `${today}_${safeTitle}_${safeSpeaker}${fileExtension}`;
           document.body.appendChild(a);
           a.click();
