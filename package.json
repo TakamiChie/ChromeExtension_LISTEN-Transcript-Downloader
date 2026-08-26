@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "node --test --test-isolation=none test/download-filename.test.js",
+    "test:e2e": "node --test --test-isolation=none test/speaker-download.e2e.test.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  }
+}

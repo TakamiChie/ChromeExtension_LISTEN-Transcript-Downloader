@@ -15,7 +15,7 @@
     function saveCurrentEpisodeToStorage() {
       const summaryElement = document.querySelector("main div.mx-auto:nth-child(3)");
       const summary = summaryElement ? summaryElement.innerText.trim() : "概要なし";
-      const title = document.querySelector("h1").textContent.trim();
+      const title = document.querySelector("h1 a").textContent.trim();
       const url = location.href;
       const id = `check_${extractEpisodeId(url)}`;
       const dateElement = document.querySelector("main div.mx-auto:nth-child(1) div[x-data]:first-child").childNodes[0];
@@ -276,11 +276,14 @@
           const a = document.createElement("a");
           a.href = URL.createObjectURL(blob);
 
-          const safeTitle = title.replace(/[\\/:*?"<>|]/g, "_");
-          const safeSpeaker = speaker.replace(/[\\/:*?"<>|]/g, "_");
           const today = dateToStr(new Date());
 
-          a.download = `${today}_${safeTitle}_${safeSpeaker}${fileExtension}`;
+          a.download = ListendlDownloadFilename.buildSpeakerDownloadFilename(
+            today,
+            title,
+            speaker,
+            fileExtension
+          );
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
