@@ -2,7 +2,13 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
 
-const d = new Date().toISOString().split("T").shift().replace(/-/g, "")
+const d = new Date().toLocaleString('ja-JP', {
+  timeZone: 'Asia/Tokyo',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit'
+}).replace(/\//g, '');
+
 const EPISODES = [
   {
     name: "公開済みエピソード",
