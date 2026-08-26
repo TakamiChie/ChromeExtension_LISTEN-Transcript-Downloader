@@ -15,7 +15,7 @@
     function saveCurrentEpisodeToStorage() {
       const summaryElement = document.querySelector("main div.mx-auto:nth-child(3)");
       const summary = summaryElement ? summaryElement.innerText.trim() : "概要なし";
-      const title = document.querySelector("h1").textContent.trim();
+      const title = document.querySelector("h1 a").textContent.trim();
       const url = location.href;
       const id = `check_${extractEpisodeId(url)}`;
       const dateElement = document.querySelector("main div.mx-auto:nth-child(1) div[x-data]:first-child").childNodes[0];
