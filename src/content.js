@@ -276,11 +276,14 @@
           const a = document.createElement("a");
           a.href = URL.createObjectURL(blob);
 
-          const safeTitle = title.replace(/[\\/:*?"<>|]/g, "_");
-          const safeSpeaker = speaker.replace(/[\\/:*?"<>|]/g, "_");
           const today = dateToStr(new Date());
 
-          a.download = `${today}_${safeTitle}_${safeSpeaker}${fileExtension}`;
+          a.download = ListendlDownloadFilename.buildSpeakerDownloadFilename(
+            today,
+            title,
+            speaker,
+            fileExtension
+          );
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);

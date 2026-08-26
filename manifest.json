@@ -35,6 +35,7 @@
         "https://listen.style/u/*"
       ],
       "js": [
+        "src/download-filename.js",
         "src/content.js"
       ],
       "run_at": "document_start",
