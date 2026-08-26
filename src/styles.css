@@ -3,47 +3,273 @@
   transform: scale(1.2);
 }
 
-#listendltool_download_container button {
-  padding: 10px;
-  background: #e5e7eb;
-  color: black;
-  border: 1px solid black;
-}
-
-#listendltool_download_container button:hover {
-  background-color: silver;
-}
-
-/* ダウンロードボタンとスピナーを囲むコンテナ */
+/* Main floating container */
 #listendltool_download_container {
   position: fixed;
-  top: 70px;
-  right: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  /* ボタンとスピナーの間隔を調整 */
-  z-index: 10;
-  /* ダイアログより前面に出ないよう調整 */
+  top: 75px;
+  right: 20px;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.5s;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-/* スピナーのスタイル */
+/* 30px hover safety buffer zone around the container when active */
+#listendltool_download_container::before {
+  content: "";
+  position: absolute;
+  top: -30px;
+  left: -30px;
+  right: -30px;
+  bottom: -30px;
+  z-index: -1;
+  pointer-events: none;
+}
+#listendltool_download_container:hover::before,
+#listendltool_download_container.listendltool_open::before {
+  pointer-events: auto;
+}
+
+/* Trigger Button */
+#listendltool_trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  border: none;
+  border-radius: 9999px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+#listendltool_trigger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px -2px rgba(99, 102, 241, 0.3), 0 3px 6px -2px rgba(99, 102, 241, 0.2);
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+}
+
+#listendltool_trigger:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.listendltool_arrow {
+  display: inline-block;
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+/* Rotate arrow on container hover or when active open */
+#listendltool_download_container:hover .listendltool_arrow,
+#listendltool_download_container.listendltool_open .listendltool_arrow {
+  transform: rotate(180deg);
+}
+
+/* Popup Menu wrapper */
+#listendltool_popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+/* 30px hover safety buffer zone around the popup when active */
+#listendltool_popup::before {
+  content: "";
+  position: absolute;
+  top: -30px;
+  left: -30px;
+  right: -30px;
+  bottom: -30px;
+  z-index: -1;
+}
+
+/* Show popup on container hover or when active open */
+#listendltool_download_container:hover #listendltool_popup,
+#listendltool_download_container.listendltool_open #listendltool_popup {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Buttons inside popup */
+#listendltool_popup button {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+#listendltool_popup button:active {
+  transform: scale(0.98);
+}
+
+/* Custom styled action buttons */
+#listendltool_copy {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+#listendltool_copy:hover {
+  background-color: #e5e7eb;
+}
+
+#listendltool_download {
+  background-color: #e0e7ff;
+  color: #4338ca;
+}
+
+#listendltool_download:hover {
+  background-color: #c7d2fe;
+}
+
+#listendltool_clear_storage {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+#listendltool_clear_storage:hover {
+  background-color: #fee2e2;
+}
+
+/* Select element rows */
+.listendltool_menu_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.listendltool_menu_row label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 #listendltool_sort_order,
 #listendltool_file_format {
-  padding: 5px;
-  width: 5em;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #fff;
-  color: #333;
-  /* デフォルトのスタイルを削除 */
+  padding: 6px 24px 6px 8px;
+  min-width: 80px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #1f2937;
+  font-size: 12px;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6'%3E%3Cpath d='M1 1l3 4 3-4z' fill='%23333'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6'%3E%3Cpath d='M1 1l3 4 3-4z' fill='%234b5563'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 5px center;
+  background-position: right 8px center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#listendltool_sort_order:hover,
+#listendltool_file_format:hover,
+#listendltool_sort_order:focus,
+#listendltool_file_format:focus {
+  border-color: #6366f1;
+  outline: none;
+}
+
+/* System Level Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  #listendltool_popup {
+    background: rgba(31, 41, 55, 0.95);
+    border-color: rgba(75, 85, 99, 0.8);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  }
+
+  .listendltool_menu_row {
+    color: #9ca3af;
+  }
+
+  #listendltool_sort_order,
+  #listendltool_file_format {
+    background-color: #1f2937;
+    border-color: #4b5563;
+    color: #f3f4f6;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6'%3E%3Cpath d='M1 1l3 4 3-4z' fill='%239ca3af'/%3E%3C/svg%3E");
+  }
+
+  #listendltool_sort_order:hover,
+  #listendltool_file_format:hover,
+  #listendltool_sort_order:focus,
+  #listendltool_file_format:focus {
+    border-color: #818cf8;
+  }
+
+  #listendltool_copy {
+    background-color: #374151;
+    color: #f3f4f6;
+  }
+
+  #listendltool_copy:hover {
+    background-color: #4b5563;
+  }
+
+  #listendltool_download {
+    background-color: #312e81;
+    color: #e0e7ff;
+  }
+
+  #listendltool_download:hover {
+    background-color: #3730a3;
+  }
+
+  #listendltool_clear_storage {
+    background-color: #7f1d1d;
+    color: #fef2f2;
+  }
+
+  #listendltool_clear_storage:hover {
+    background-color: #991b1b;
+  }
+
+  #listendltool_speaker_download {
+    background-color: #064e3b;
+    color: #a7f3d0;
+  }
+
+  #listendltool_speaker_download:hover {
+    background-color: #047857;
+  }
+}
+
+#listendltool_speaker_download {
+  background-color: #ecfdf5;
+  color: #065f46;
+}
+
+#listendltool_speaker_download:hover {
+  background-color: #d1fae5;
 }
