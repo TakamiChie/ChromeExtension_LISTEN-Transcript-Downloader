@@ -13,14 +13,20 @@
 
     // 個別ページ用のエピソード情報を抽出し、localStorageに保存する共通処理
     function saveCurrentEpisodeToStorage() {
-      const summaryElement = document.querySelector("main div.mx-auto:nth-child(3)");
-      const summary = summaryElement ? summaryElement.innerText.trim() : "概要なし";
-      const title = document.querySelector("h1 a").textContent.trim();
+      const heading = document.querySelector("h1");
+      const podcastName = document.title.split("-").at(-2).trim();
+      const metaTitle = document.querySelector('meta[property="og:title"]')?.content.trim();
+      const metaDescription = document.querySelector('meta[property="og:description"]')?.content.trim();
+      const podcastNameSuffix = ` - ${podcastName}`;
+      const title = metaTitle?.endsWith(podcastNameSuffix)
+        ? metaTitle.slice(0, -podcastNameSuffix.length).trim()
+        : metaTitle || heading?.textContent.trim() || "タイトル不明";
+      const summary = metaDescription || "概要なし";
       const url = location.href;
       const id = `check_${extractEpisodeId(url)}`;
-      const dateElement = document.querySelector("main div.mx-auto:nth-child(1) div[x-data]:first-child").childNodes[0];
-      let formattedEpisodeDate = dateElement ? dateToStr(new Date(dateElement.textContent.trim()), "-") : "日付不明";
-      const podcastName = document.title.split("-").at(-2).trim();
+      const rawDate = heading?.parentElement?.textContent.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0];
+      const episodeDate = parseEpisodeDate(rawDate);
+      const formattedEpisodeDate = episodeDate ? dateToStr(episodeDate, "-") : "日付不明";
       let content = {};
       content[id] = { summary, title, url, date: formattedEpisodeDate, podcastName: podcastName };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
@@ -77,9 +83,27 @@
   }
 
   function dateToStr(date, separator = "") {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+      return "日付不明";
+    }
     return date.getFullYear() + separator +
       String(date.getMonth() + 1).padStart(2, "0") + separator +
       String(date.getDate()).padStart(2, "0");
+  }
+
+  function parseEpisodeDate(rawDate) {
+    if (!rawDate) return null;
+
+    const text = rawDate.trim();
+    const japaneseDate = text.match(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日/);
+    if (japaneseDate) {
+      const [, year, month, day] = japaneseDate;
+      const date = new Date(Number(year), Number(month) - 1, Number(day));
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    const date = new Date(text);
+    return Number.isNaN(date.getTime()) ? null : date;
   }
 
   function updateButtonVisibility() {
@@ -123,7 +147,8 @@
       dateDiv = parent.parentElement.querySelector("div");
     }
     let rawDate = dateDiv ? dateDiv.childNodes[0].textContent.trim() : null;
-    let formattedEpisodeDate = rawDate ? dateToStr(new Date(rawDate), "-") : "日付不明";
+    const episodeDate = parseEpisodeDate(rawDate);
+    const formattedEpisodeDate = episodeDate ? dateToStr(episodeDate, "-") : "日付不明";
 
     // ポッドキャスト名を取得
     const podcastName = document.title.replace("- LISTEN", "").trim();
