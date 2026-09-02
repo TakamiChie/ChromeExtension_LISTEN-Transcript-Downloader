@@ -5,8 +5,6 @@
   "description": "LISTENでポッドキャストの文字起こしを一括ダウンロード",
   "permissions": [
     "downloads",
-    "activeTab",
-    "scripting",
     "storage"
   ],
   "host_permissions": [
